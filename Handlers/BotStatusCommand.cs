@@ -8,12 +8,12 @@ using static Telegram.Bot.CovidPoll.Helpers.BotCommandHelper;
 
 namespace Telegram.Bot.CovidPoll.Handlers
 {
-    public class BotExecuteCommand : IBotCommand
+    public class BotStatusCommand : IBotCommand
     {
         private readonly BotClientService botClientService;
         private readonly IBotCommandHelper botCommandHelper;
         private readonly IChatRepository chatRepository;
-        public BotExecuteCommand(BotClientService botClientService,
+        public BotStatusCommand(BotClientService botClientService,
                                  IBotCommandHelper botCommandHelper,
                                  IChatRepository chatRepository)
         {

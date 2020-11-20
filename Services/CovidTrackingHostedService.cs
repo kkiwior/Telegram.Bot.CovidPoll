@@ -47,7 +47,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         {
                             fetchDate = DateTime.UtcNow.Date.AddDays(1)
                                 .AddHours(covidTrackingSettings.Value.FetchDataHourUtc);
-                            Log.Information($"Data successfully downloaded");
+                            Log.Information($"Data successfully downloaded or is up to date");
                         }
                         else
                         {

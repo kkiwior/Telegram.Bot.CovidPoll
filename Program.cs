@@ -33,13 +33,14 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<IPollRepository, PollRepository>();
                      services.AddSingleton<ICovidRepository, CovidRepository>();
                      services.AddSingleton<IChatRepository, ChatRepository>();
-                     services.AddSingleton<IBotCommand, BotExecuteCommand>();
+                     services.AddSingleton<IBotCommand, BotStatusCommand>();
                      services.AddHostedService<BotEventsHostedService>();
-                     services.AddHostedService<CovidTrackingHostedService>();
+                     //services.AddHostedService<CovidTrackingHostedService>();
 
                      var seqConfiguration = hostContext.Configuration.GetSection("SerilogSettings");
                      Log.Logger = new LoggerConfiguration()
-                         .WriteTo.Seq(seqConfiguration.GetSection("ServerUrl").Value)
+                         .WriteTo.Seq(seqConfiguration.GetSection("ServerUrl").Value, 
+                                      apiKey: seqConfiguration.GetSection(("ApiKey")).Value)
                          .CreateLogger();
                  });
     }
