@@ -21,7 +21,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
             if (command == null)
                 return false;
 
-            var botName = (await botClientService.botClient.GetMeAsync()).Username;
+            var botName = (await botClientService.BotClient.GetMeAsync()).Username;
             var regex = new Regex(@$"\G\/{commandType}(?:@{botName})?\Z");
 
             return regex.IsMatch(command.ToString());

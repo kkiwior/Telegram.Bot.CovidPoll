@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Telegram.Bot.CovidPoll": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

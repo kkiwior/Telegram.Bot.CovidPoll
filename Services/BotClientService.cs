@@ -5,10 +5,10 @@ namespace Telegram.Bot.CovidPoll.Services
 {
     public class BotClientService
     {
-        public readonly ITelegramBotClient botClient;
         public BotClientService(IOptions<BotSettings> botSettings)
         {
-            botClient = new TelegramBotClient(botSettings.Value.Token);
+            BotClient = new TelegramBotClient(botSettings.Value.Token);
         }
+        public ITelegramBotClient BotClient { get; private set; }
     }
 }

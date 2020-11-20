@@ -9,7 +9,7 @@ namespace Telegram.Bot.CovidPoll.Db
         private readonly IMongoDatabase db;
         public MongoDb(IOptions<MongoSettings> mongoSettings)
         {
-            var client = new MongoClient(mongoSettings.Value.ConnetionString);
+            var client = new MongoClient(mongoSettings.Value.ConnectionString);
             db = client.GetDatabase(mongoSettings.Value.DbName);
         }
         public IMongoCollection<Poll> Polls => this.db.GetCollection<Poll>("polls");
