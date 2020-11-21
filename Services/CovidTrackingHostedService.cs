@@ -38,26 +38,25 @@ namespace Telegram.Bot.CovidPoll.Services
             var fetchDate = DateTime.UtcNow.Date.AddHours(covidTrackingSettings.Value.FetchDataHourUtc);
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (DateTime.UtcNow >= fetchDate || !firstExecute)
+                if (DateTime.UtcNow >= fetchDate)
                 {
-                    firstExecute = true;
                     try
                     {
                         if (await SaveTotalCasesAsync())
                         {
                             fetchDate = DateTime.UtcNow.Date.AddDays(1)
                                 .AddHours(covidTrackingSettings.Value.FetchDataHourUtc);
-                            Log.Information($"Data successfully downloaded or is up to date");
+                            Log.Information($"[{nameof(CovidTrackingHostedService)}]: Data successfully downloaded or is up to date");
                         }
                         else
                         {
-                            Log.Error("Problem with downloading data");
+                            Log.Error($"[{nameof(CovidTrackingHostedService)}]: Problem with downloading data");
                             await Task.Delay(TimeSpan.FromHours(3), stoppingToken);
                         }
                     }
                     catch (CovidParseException ex)
                     {
-                        Log.Error($"CovidParseException: {ex.Message}");
+                        Log.Error(ex, $"[{nameof(CovidTrackingHostedService)}]: CovidParseException");
                         applicationLifetime.StopApplication();
                     }
                 }

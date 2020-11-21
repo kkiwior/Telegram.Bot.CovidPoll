@@ -28,5 +28,9 @@ namespace Telegram.Bot.CovidPoll.Repositories
         {
             return mongoDb.Polls.Find(_ => true).ToListAsync();
         }
+        public Task<List<Poll>> GetAllPollsByPollOptionsId(string pollOptionsId)
+        {
+            return mongoDb.Polls.Find(p => p.PollOptionsId.Equals(pollOptionsId)).ToListAsync();
+        }
     }
 }

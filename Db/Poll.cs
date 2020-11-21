@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
 using System.Collections.Generic;
 using Telegram.Bot.Types;
 
@@ -12,8 +11,9 @@ namespace Telegram.Bot.CovidPoll.Db
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
         public long ChatId { get; set; }
-        public IList<string> PollOptions { get; set; }
+        public int MessageId { get; set; }
+        public string PollId { get; set; }
+        public string PollOptionsId { get; set; }
         public IList<PollAnswer> PollAnswers { get; set; }
-        public DateTime Date { get; set; }
     }
 }

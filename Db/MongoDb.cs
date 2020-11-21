@@ -15,5 +15,6 @@ namespace Telegram.Bot.CovidPoll.Db
         public IMongoCollection<Poll> Polls => this.db.GetCollection<Poll>("polls");
         public IMongoCollection<Covid> Covids => this.db.GetCollection<Covid>("covids");
         public IMongoCollection<Chat> Chats => this.db.GetCollection<Chat>("chats");
+        public IMongoCollection<PollOptions> PollsOptions => this.db.GetCollection<PollOptions>("pollsoptions");
     }
 }
