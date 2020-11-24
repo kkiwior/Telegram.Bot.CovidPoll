@@ -18,16 +18,19 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly ICovidRepository covidRepository;
         private readonly IHttpClientFactory httpClient;
         private readonly IHostApplicationLifetime applicationLifetime;
+        private readonly BotPollResultSenderService botPollResultSender;
         private static bool firstExecute = false;
         public CovidTrackingHostedService(IOptions<CovidTrackingSettings> covidTrackingSettings,
                                           ICovidRepository covidRepository,
                                           IHttpClientFactory httpClient,
-                                          IHostApplicationLifetime applicationLifetime)
+                                          IHostApplicationLifetime applicationLifetime,
+                                          BotPollResultSenderService botPollResultSender)
         {
             this.covidTrackingSettings = covidTrackingSettings;
             this.covidRepository = covidRepository;
             this.httpClient = httpClient;
             this.applicationLifetime = applicationLifetime;
+            this.botPollResultSender = botPollResultSender;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -42,7 +45,8 @@ namespace Telegram.Bot.CovidPoll.Services
                 {
                     try
                     {
-                        if (await SaveTotalCasesAsync())
+                        var result = await SaveTotalCasesAsync();
+                        if (result)
                         {
                             fetchDate = DateTime.UtcNow.Date.AddDays(1)
                                 .AddHours(covidTrackingSettings.Value.FetchDataHourUtc);
@@ -96,6 +100,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         TotalCases = totalCases,
                         Date = DateTime.UtcNow.Date
                     });
+                    botPollResultSender.SendPredictionsResultsToChats();
                     return true;
                 }
                 else

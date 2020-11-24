@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Telegram.Bot.CovidPoll.Config;
@@ -14,7 +15,14 @@ namespace Telegram.Bot.CovidPoll
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            try
+            {
+                CreateHostBuilder(args).Build().Run();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Program exception.");
+            }
 
             Log.CloseAndFlush();
         }
@@ -28,17 +36,26 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<MongoDb>();
                      services.AddSingleton<BotClientService>();
                      services.AddSingleton<BotPollSenderHostedService>();
+                     services.AddSingleton<CovidCalculateService>();
                      services.AddHttpClient();
                      services.AddSingleton<IBotCommandHelper, BotCommandHelper>();
                      services.AddSingleton<IPollRepository, PollRepository>();
                      services.AddSingleton<ICovidRepository, CovidRepository>();
                      services.AddSingleton<IChatRepository, ChatRepository>();
-                     services.AddSingleton<IBotCommand, BotStatusCommand>();
-                     services.AddSingleton<IPollOptionsRepository, PollOptionsRepository>();
+                     services.AddSingleton<IPollConverterHelper, PollConverterHelper>();
+                     //services.AddSingleton<IBotEvent, BotStatusHandler>();
+                     services.AddSingleton<IBotEvent, BotVoteHandler>();
+                     services.AddSingleton<IBotEvent, BotJoinLeaveHandler>();
+                     services.AddSingleton<IBotEvent, BotAdminHandler>();
+                     services.AddSingleton<QueueService>();
+                     services.AddSingleton<IPollChatRepository, PollChatRepository>();
                      services.AddSingleton<PollOptionsService>();
+                     services.AddSingleton<QueueService>();
+                     services.AddSingleton<BotPollResultSenderService>();
                      services.AddHostedService<BotEventsHostedService>();
                      services.AddHostedService<BotPollSenderHostedService>();
-                     services.AddHostedService<CovidTrackingHostedService>();
+                     //services.AddHostedService<CovidTrackingHostedService>();
+                     services.AddHostedService<QueueHostedService>();
 
                      var seqConfiguration = hostContext.Configuration.GetSection("SerilogSettings");
                      Log.Logger = new LoggerConfiguration()

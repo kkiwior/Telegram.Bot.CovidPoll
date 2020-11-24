@@ -7,8 +7,7 @@ namespace Telegram.Bot.CovidPoll.Db
     public class Covid
     {
         [BsonId]
-        [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; }
+        public ObjectId Id { get; set; }
         public int TotalCases { get; set; }
         public int NewCases { get; set; }
         public DateTime Date { get; set; }

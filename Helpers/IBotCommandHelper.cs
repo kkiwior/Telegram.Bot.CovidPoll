@@ -5,6 +5,6 @@ namespace Telegram.Bot.CovidPoll.Helpers
 {
     public interface IBotCommandHelper
     {
-        Task<bool> CheckCommandIsCorrectAsync(BotCommands commandType, string command);
+        Task<BotCommandModel> CheckCommandIsCorrectAsync(BotCommands commandType, string command);
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
+using Telegram.Bot.CovidPoll.Exceptions;
 using Telegram.Bot.CovidPoll.Repositories;
 
 namespace Telegram.Bot.CovidPoll.Services
@@ -10,31 +11,33 @@ namespace Telegram.Bot.CovidPoll.Services
     public class PollOptionsService
     {
         private readonly ICovidRepository covidRepository;
-        private readonly IPollOptionsRepository pollOptionsRepository;
+        private readonly IPollRepository pollRepository;
+        private readonly CovidCalculateService covidCalculateService;
 
-        public PollOptionsService(ICovidRepository covidRepository, IPollOptionsRepository pollOptionsRepository)
+        public PollOptionsService(ICovidRepository covidRepository, IPollRepository pollRepository, CovidCalculateService covidCalculateService)
         {
             this.covidRepository = covidRepository;
-            this.pollOptionsRepository = pollOptionsRepository;
+            this.pollRepository = pollRepository;
+            this.covidCalculateService = covidCalculateService;
         }
 
-        public async Task<PollOptions> GetPollOptionsAsync(DateTime date)
+        public async Task<Poll> GetPollOptionsAsync(DateTime date)
         {
-            var covids = await covidRepository.FindLatestLimitAsync(2);
-            if (covids.Count < 2)
-                return null;
-
-            var pollOptionsInDb = await pollOptionsRepository.GetByDateAsync(DateTime.UtcNow.Date);
-            if (pollOptionsInDb != null)
-                return pollOptionsInDb;
-
-            if (covids.FirstOrDefault().Date.Date == date.Date && covids.LastOrDefault().Date.Date == date.Date.AddDays(-1))
+            try
             {
-                var covidToday = covids.FirstOrDefault().TotalCases - covids.LastOrDefault().TotalCases;
+                var cases = await covidCalculateService.GetActualNumberOfCasesAsync();
+                if (cases.Date.Date != date.Date.Date)
+                    return null;
+
+                var pollOptionsInDb = await pollRepository.GetByDateAsync(date.Date);
+                if (pollOptionsInDb != null)
+                    return pollOptionsInDb;
+
+                var covidToday = (double) cases.Cases;
                 var pollOptions = new List<string>();
                 for (var i = 0; i < 10; i++)
                 {
-                    var covidOption = 0;
+                    var covidOption = 0d;
                     if (covidToday / 10000 > 1)
                     {
                         covidOption = i < 5 ? covidToday - 1000 * i : covidToday + 1000 * (i - 4);
@@ -55,16 +58,21 @@ namespace Telegram.Bot.CovidPoll.Services
 
                     pollOptions.Add(covidOption.ToString());
                 }
-                pollOptions.Sort();
-                var pollOptionsAdd = new PollOptions()
+
+                pollOptions = pollOptions.OrderBy(po => int.Parse(po)).ToList();
+                var poll = new Poll()
                 {
                     Options = pollOptions,
                     Date = DateTime.UtcNow.Date
                 };
-                await pollOptionsRepository.AddAsync(pollOptionsAdd);
-                return pollOptionsAdd;
+                await pollRepository.AddAsync(poll);
+
+                return poll;
             }
-            return null;
+            catch (CovidCalculateException)
+            {
+                return null;
+            }
         }
     }
 }

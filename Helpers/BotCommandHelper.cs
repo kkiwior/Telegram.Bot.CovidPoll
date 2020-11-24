@@ -14,17 +14,32 @@ namespace Telegram.Bot.CovidPoll.Helpers
         public enum BotCommands
         {
             start,
-            stop
+            stop,
+            setCovid
         };
-        public async Task<bool> CheckCommandIsCorrectAsync(BotCommands commandType, string command)
+
+        public async Task<BotCommandModel> CheckCommandIsCorrectAsync(BotCommands commandType, string command)
         {
             if (command == null)
-                return false;
+                return new BotCommandModel() {CommandCorrect = false};
 
             var botName = (await botClientService.BotClient.GetMeAsync()).Username;
-            var regex = new Regex(@$"\G\/{commandType}(?:@{botName})?\Z");
+            var regex = new Regex(@$"\G(\/{commandType}(?:@CovidPollBot)?) ?([a-zA-Z0-9]*)\Z");
 
-            return regex.IsMatch(command.ToString());
+            var matches = regex.Matches(command);
+            if (matches.Count > 0)
+            {
+                return new BotCommandModel()
+                {
+                    CommandCorrect = true,
+                    CommandArg = matches[0].Groups[2].Value
+                };
+            }
+
+            return new BotCommandModel()
+            {
+                CommandCorrect = false
+            };
         }
     }
 }

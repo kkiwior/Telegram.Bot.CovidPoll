@@ -10,20 +10,21 @@ namespace Telegram.Bot.CovidPoll.Services
     public class BotEventsHostedService : BackgroundService
     {
         private readonly BotClientService botClientService;
-        private readonly IList<IBotCommand> botCommands;
-        public BotEventsHostedService(BotClientService botClientService, IEnumerable<IBotCommand> botCommands)
+        private readonly IList<IBotEvent> botEvents;
+        public BotEventsHostedService(BotClientService botClientService, IEnumerable<IBotEvent> botEvents)
         {
             this.botClientService = botClientService;
-            this.botCommands = botCommands.ToList();
+            this.botEvents = botEvents.ToList();
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             stoppingToken.ThrowIfCancellationRequested();
 
-            await botClientService.BotClient.SetMyCommandsAsync(this.botCommands.SelectMany(bc => bc.Command), stoppingToken);
-            foreach (var botCommand in botCommands)
+            await botClientService.BotClient.SetMyCommandsAsync(
+                this.botEvents.Where(bc => bc.Command != null).SelectMany(bc => bc.Command), stoppingToken);
+            foreach (var botEvent in botEvents)
             {
-                botCommand.RegisterCommand(botClientService);
+                botEvent.RegisterEvent(botClientService);
             }
 
             botClientService.BotClient.StartReceiving(cancellationToken: stoppingToken);

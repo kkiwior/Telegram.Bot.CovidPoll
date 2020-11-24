@@ -4,9 +4,9 @@ using Telegram.Bot.Types;
 
 namespace Telegram.Bot.CovidPoll.Handlers
 {
-    public interface IBotCommand
+    public interface IBotEvent
     {
-        void RegisterCommand(BotClientService botClient);
+        void RegisterEvent(BotClientService botClient);
         IList<BotCommand> Command { get; }
     }
 }
