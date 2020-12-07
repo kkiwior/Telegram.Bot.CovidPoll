@@ -15,7 +15,8 @@ namespace Telegram.Bot.CovidPoll.Helpers
         {
             start,
             stop,
-            setCovid
+            setCovid,
+            test
         };
 
         public async Task<BotCommandModel> CheckCommandIsCorrectAsync(BotCommands commandType, string command)
@@ -29,10 +30,16 @@ namespace Telegram.Bot.CovidPoll.Helpers
             var matches = regex.Matches(command);
             if (matches.Count > 0)
             {
+                if (matches[0].Groups.Count > 1)
+                    return new BotCommandModel()
+                    {
+                        CommandCorrect = true,
+                        CommandArg = matches[0].Groups[2].Value
+                    };
+
                 return new BotCommandModel()
                 {
-                    CommandCorrect = true,
-                    CommandArg = matches[0].Groups[2].Value
+                    CommandCorrect = true
                 };
             }
 

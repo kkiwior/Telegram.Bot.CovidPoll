@@ -42,19 +42,20 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<IPollRepository, PollRepository>();
                      services.AddSingleton<ICovidRepository, CovidRepository>();
                      services.AddSingleton<IChatRepository, ChatRepository>();
+                     services.AddSingleton<IPollChatRepository, PollChatRepository>();
+                     services.AddSingleton<IPollChatRankingRepository, PollChatRankingRepository>();
                      services.AddSingleton<IPollConverterHelper, PollConverterHelper>();
                      //services.AddSingleton<IBotEvent, BotStatusHandler>();
                      services.AddSingleton<IBotEvent, BotVoteHandler>();
                      services.AddSingleton<IBotEvent, BotJoinLeaveHandler>();
                      services.AddSingleton<IBotEvent, BotAdminHandler>();
                      services.AddSingleton<QueueService>();
-                     services.AddSingleton<IPollChatRepository, PollChatRepository>();
                      services.AddSingleton<PollOptionsService>();
                      services.AddSingleton<QueueService>();
                      services.AddSingleton<BotPollResultSenderService>();
+                     services.AddHostedService<CovidTrackingHostedService>();
                      services.AddHostedService<BotEventsHostedService>();
                      services.AddHostedService<BotPollSenderHostedService>();
-                     services.AddHostedService<CovidTrackingHostedService>();
                      services.AddHostedService<QueueHostedService>();
 
                      var seqConfiguration = hostContext.Configuration.GetSection("SerilogSettings");

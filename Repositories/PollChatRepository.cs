@@ -1,19 +1,18 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.Types;
-using Chat = Telegram.Bot.CovidPoll.Db.Chat;
 using Poll = Telegram.Bot.CovidPoll.Db.Poll;
-using PollAnswer = Telegram.Bot.Types.PollAnswer;
 
 namespace Telegram.Bot.CovidPoll.Repositories
 {
     public class PollChatRepository : IPollChatRepository
     {
         private readonly MongoDb mongoDb;
-        private readonly IPollRepository pollRepository;
+        private readonly IPollRepository pollRepository; 
 
         public PollChatRepository(MongoDb mongoDb, IPollRepository pollRepository)
         {

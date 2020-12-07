@@ -22,6 +22,7 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IPollChatRepository pollChatRepository;
         private readonly BotPollResultSenderService botPollResultSender;
         private readonly IPollConverterHelper pollConverterHelper;
+        private readonly QueueService queueService;
 
         public BotPollSenderHostedService(BotClientService botClientService,
                                           IOptions<BotSettings> botSettings,
@@ -30,7 +31,8 @@ namespace Telegram.Bot.CovidPoll.Services
                                           PollOptionsService pollOptionsService,
                                           IPollChatRepository pollChatRepository,
                                           BotPollResultSenderService botPollResultSender,
-                                          IPollConverterHelper pollConverterHelper)
+                                          IPollConverterHelper pollConverterHelper,
+                                          QueueService queueService)
         {
             this.botClientService = botClientService;
             this.botSettings = botSettings;
@@ -40,6 +42,7 @@ namespace Telegram.Bot.CovidPoll.Services
             this.pollChatRepository = pollChatRepository;
             this.botPollResultSender = botPollResultSender;
             this.pollConverterHelper = pollConverterHelper;
+            this.queueService = queueService;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -80,21 +83,24 @@ namespace Telegram.Bot.CovidPoll.Services
             var chats = await chatRepository.GetAll();
             if (poll == null)
             {
-                foreach (var chat in chats)
+                queueService.QueueBackgroundWorkItem(async stoppingToken =>
                 {
-                    try
+                    foreach (var chat in chats)
                     {
-                        await botClientService.BotClient.SendTextMessageAsync(
-                            chatId: chat.ChatId,
-                            text:
-                            "Niestety, nie posiadamy aktualnych wyników zakażeń, aby wyświetlić wyniki i udostępnić możliwość przewidywań. Kolejna próba nastąpi za 1h.",
-                            cancellationToken: stoppingToken
-                        );
-                    }
-                    catch (Exception) {}
+                        try
+                        {
+                            await botClientService.BotClient.SendTextMessageAsync(
+                                chatId: chat.ChatId,
+                                text:
+                                "Niestety, nie posiadamy aktualnych wyników zakażeń, aby wyświetlić wyniki przewidywań i udostępnić nową ankietę. Kolejna próba nastąpi za 1h.",
+                                cancellationToken: stoppingToken
+                            );
+                        }
+                        catch (Exception) { }
 
-                    await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
-                }
+                        await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                    }
+                });
                 Log.Information($"[{nameof(BotPollSenderHostedService)}] - Polls haven't been sent. Not enough information about covid.");
             }
             else if (!poll.ChatPollsSended)
@@ -102,22 +108,25 @@ namespace Telegram.Bot.CovidPoll.Services
                 await pollRepository.SetSendedAsync(poll.Id, true);
                 poll.Options = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options);
 
-                foreach (var chat in chats)
+                queueService.QueueBackgroundWorkItem(async stoppingToken =>
                 {
-                    try
+                    foreach (var chat in chats)
                     {
-                        var sendedPoll = await SendPoll(stoppingToken, chat.ChatId, poll.Options);
-                        await pollChatRepository.AddAsync(poll.Id, new Db.PollChat()
+                        try
                         {
-                            ChatId = sendedPoll.Chat.Id,
-                            PollId = sendedPoll.Poll.Id,
-                            MessageId = sendedPoll.MessageId
-                        });
-                    }
-                    catch (Exception) {}
+                            var sendedPoll = await SendPoll(stoppingToken, chat.ChatId, poll.Options);
+                            await pollChatRepository.AddAsync(poll.Id, new Db.PollChat()
+                            {
+                                ChatId = sendedPoll.Chat.Id,
+                                PollId = sendedPoll.Poll.Id,
+                                MessageId = sendedPoll.MessageId
+                            });
+                        }
+                        catch (Exception) { }
 
-                    await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
-                }
+                        await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                    }
+                });
                 Log.Information($"[{nameof(BotPollSenderHostedService)}] - Polls have been sent.");
 
                 return true;
@@ -142,17 +151,20 @@ namespace Telegram.Bot.CovidPoll.Services
             var chatPolls = poll.ChatPolls;
             if (chatPolls != null)
             {
-                await pollRepository.SetClosedAsync(poll.Id, true);
-                foreach (var chatPoll in chatPolls)
+                queueService.QueueBackgroundWorkItem(async stoppingToken =>
                 {
-                    try
+                    await pollRepository.SetClosedAsync(poll.Id, true);
+                    foreach (var chatPoll in chatPolls)
                     {
-                        await StopPoll(stoppingToken, chatPoll.ChatId, chatPoll.MessageId);
-                    }
-                    catch (Exception) {}
+                        try
+                        {
+                            await StopPoll(stoppingToken, chatPoll.ChatId, chatPoll.MessageId);
+                        }
+                        catch (Exception) { }
 
-                    await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
-                }
+                        await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                    }
+                });
             }
             Log.Information($"[{nameof(BotPollSenderHostedService)}] - All polls have been closed.");
         }

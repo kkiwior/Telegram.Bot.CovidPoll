@@ -19,10 +19,15 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IPollRepository pollRepository;
         private readonly CovidCalculateService covidCalculateService;
         private readonly IPollConverterHelper pollConverterHelper;
+        private readonly IPollChatRankingRepository pollChatRankingRepository;
 
-        public BotPollResultSenderService(QueueService queueService, IChatRepository chatRepository,
-            BotClientService botClientService, IPollRepository pollRepository,
-            CovidCalculateService covidCalculateService, IPollConverterHelper pollConverterHelper)
+        public BotPollResultSenderService(QueueService queueService,
+                                          IChatRepository chatRepository,
+                                          BotClientService botClientService,
+                                          IPollRepository pollRepository,
+                                          CovidCalculateService covidCalculateService,
+                                          IPollConverterHelper pollConverterHelper,
+                                          IPollChatRankingRepository pollChatRankingRepository)
         {
             this.queueService = queueService;
             this.chatRepository = chatRepository;
@@ -30,6 +35,7 @@ namespace Telegram.Bot.CovidPoll.Services
             this.pollRepository = pollRepository;
             this.covidCalculateService = covidCalculateService;
             this.pollConverterHelper = pollConverterHelper;
+            this.pollChatRankingRepository = pollChatRankingRepository;
         }
 
         public void SendPredictionsToChats()
@@ -96,7 +102,7 @@ namespace Telegram.Bot.CovidPoll.Services
                             continue;
                         
                         var covidToday = cases.Cases;
-                        var text = GetAllPredictionsResult(poll, pollChat, covidToday);
+                        var text = await GetAllPredictionsResult(poll, pollChat, covidToday);
 
                         try
                         {
@@ -119,7 +125,7 @@ namespace Telegram.Bot.CovidPoll.Services
             });
         }
 
-        private string GetAllPredictionsResult(Poll poll, PollChat pollChat, int covidToday)
+        private async Task<string> GetAllPredictionsResult(Poll poll, PollChat pollChat, int covidToday)
         {
             var pollOptionsText = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options, true);
             var sb = new StringBuilder($"<strong>Aktualna liczba przypadków:</strong> {covidToday}"); sb.AppendLine(); sb.AppendLine();
@@ -142,6 +148,24 @@ namespace Telegram.Bot.CovidPoll.Services
                     else
                         sb.AppendLine($"@{pollAnswer.Username} - zaznaczył {pollOptionsText[pollAnswer.VoteId]}");
                 }
+                await pollChatRankingRepository.AddWinsCountAsync(pollAnswers, pollChat.ChatId);
+
+                sb.AppendLine(); sb.AppendLine("Ogólny ranking (przewidzieli poprawnie):");
+                var ranking = await pollChatRankingRepository.GetChatRankingAsync(pollChat.ChatId);
+                if (ranking != null)
+                {
+                    if (ranking.Winners.Count == 0)
+                        sb.AppendLine(); sb.AppendLine("Brak osób, które poprawnie przewidziały.");
+
+                    foreach (var winner in ranking.Winners)
+                    {
+                        if (winner.Username == null)
+                            sb.AppendLine($"<a href=\"tg://user?id={winner.UserId}\">{winner.UserFirstName}</a> - {winner.WinsCount} raz/y");
+                        else
+                            sb.AppendLine($"@{winner.Username} - {winner.WinsCount} raz/y");
+                    }
+                }
+
             }
             return sb.ToString();
         }
