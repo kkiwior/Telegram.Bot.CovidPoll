@@ -4,6 +4,6 @@ namespace Telegram.Bot.CovidPoll.Helpers
 {
     public interface IPollConverterHelper
     {
-        List<string> ConvertOptionsToTextOptions(List<string> pollOptions);
+        List<string> ConvertOptionsToTextOptions(List<string> pollOptions, bool htmlEnabled = false);
     }
 }

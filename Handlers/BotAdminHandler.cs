@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Options;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Config;
@@ -45,7 +44,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
             {
                 if (e.Message.From.Id == botOptions.Value.AdminUserId)
                 {
-                    if (int.TryParse(command.CommandArg, out var totalCases))
+                    if (int.TryParse(command.CommandArg, out var newCases))
                     {
                         var latestCovid = await covidRepository.FindLatestAsync();
                         if (latestCovid != null && DateTime.UtcNow.Date <= latestCovid.Date)
@@ -53,7 +52,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
                         await covidRepository.AddAsync(new Db.Covid
                         {
-                            TotalCases = totalCases,
+                            NewCases = newCases,
                             Date = DateTime.UtcNow.Date
                         });
                         botPollResultSender.SendPredictionsResultsToChats();

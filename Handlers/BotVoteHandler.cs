@@ -12,12 +12,14 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private readonly BotClientService botClientService;
         private readonly IPollRepository pollRepository;
         private readonly IPollChatRepository pollChatRepository;
+        private readonly IChatRepository chatRepository;
 
-        public BotVoteHandler(BotClientService botClientService, IPollRepository pollRepository, IPollChatRepository pollChatRepository)
+        public BotVoteHandler(BotClientService botClientService, IPollRepository pollRepository, IPollChatRepository pollChatRepository, IChatRepository chatRepository)
         {
             this.botClientService = botClientService;
             this.pollRepository = pollRepository;
             this.pollChatRepository = pollChatRepository;
+            this.chatRepository = chatRepository;
         }
 
         public IList<BotCommand> Command => null;
@@ -36,6 +38,13 @@ namespace Telegram.Bot.CovidPoll.Handlers
             if (latestPoll != null)
             {
                 var pollChat = latestPoll.ChatPolls.FirstOrDefault(cp => cp.PollId.Equals(e.Update.PollAnswer.PollId));
+                if (pollChat == null)
+                    return;
+
+                var chatAvailable = await chatRepository.CheckExistsByIdAsync(pollChat.ChatId);
+                if (!chatAvailable)
+                    return;
+
                 if (latestPoll.ChatPollsClosed)
                 {
                     try
@@ -56,7 +65,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         latestPoll.Id, pollChat.PollId);
                     if (!alreadyVoted)
                     {
-                        await pollChatRepository.AddVoteAsync(e.Update.PollAnswer.User.Id, e.Update.PollAnswer.User.Username, latestPoll.Id,
+                        await pollChatRepository.AddVoteAsync(e.Update.PollAnswer.User.Id, e.Update.PollAnswer.User.Username, e.Update.PollAnswer.User.FirstName, latestPoll.Id,
                             e.Update.PollAnswer.PollId, e.Update.PollAnswer.OptionIds[0]);
                     }
                 }

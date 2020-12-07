@@ -54,7 +54,7 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<BotPollResultSenderService>();
                      services.AddHostedService<BotEventsHostedService>();
                      services.AddHostedService<BotPollSenderHostedService>();
-                     //services.AddHostedService<CovidTrackingHostedService>();
+                     services.AddHostedService<CovidTrackingHostedService>();
                      services.AddHostedService<QueueHostedService>();
 
                      var seqConfiguration = hostContext.Configuration.GetSection("SerilogSettings");

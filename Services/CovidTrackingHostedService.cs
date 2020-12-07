@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System;
+using System.Globalization;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -55,7 +56,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         else
                         {
                             Log.Error($"[{nameof(CovidTrackingHostedService)}]: Problem with downloading data");
-                            await Task.Delay(TimeSpan.FromHours(3), stoppingToken);
+                            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
                         }
                     }
                     catch (CovidParseException ex)
@@ -79,25 +80,33 @@ namespace Telegram.Bot.CovidPoll.Services
             {
                 var htmlContent = await response.Content.ReadAsStringAsync();
 
-                var pattern = "<pre id=\"registerData\" class=\"hide\">([^<]*)<\\/pre>";
-                var datePattern = "^{\"description\":\"(\\D*)(\\d*.\\d*.\\d* \\d*:\\d*)\"";
-                var casesPattern = @"Cała Polska;([0-9 ]*);";
-                var regexContent = new Regex(pattern).Match(htmlContent).Groups[1].Value;
-                if (DateTime.TryParse(new Regex(datePattern).Match(regexContent).Groups[2].Value, out var updateDate))
+                var datePattern =
+                    "<div id=\"global-stats\">\\n<div class=\"global-stats\">\\n<p>Dane pochodzą z Ministerstwa Zdrowia,\\s*aktualne\\s*na\\s*:\\s*(\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2})\\s*<a";
+                var casesPattern = "<pre id=\"registerData\" class=\"hide\">{\"description\":\".*\",\"data\":\".*Cały kraj;([0-9]*).*<\\/pre>";
+                var dateRegex = new Regex(datePattern, RegexOptions.IgnoreCase).Match(htmlContent);
+                var casesRegex = new Regex(casesPattern, RegexOptions.IgnoreCase).Match(htmlContent);
+
+                if (!dateRegex.Success || dateRegex.Groups.Count < 2)
+                    throw new CovidParseException($"dataRegex failed");
+
+                if (DateTime.TryParse(dateRegex.Groups[1].Value, CultureInfo.GetCultureInfo("pl-PL"), DateTimeStyles.None, out var updateDate))
                 {
                     if (latestCovid != null && latestCovid.Date >= updateDate.ToUniversalTime().Date)
                         return false;
                 }
                 else
                 {
-                    throw new CovidParseException($"DateTime parse exception, regexContent = {regexContent}");
+                    throw new CovidParseException($"DateTime parse exception, regexContent = {dateRegex.Groups[1].Value}");
                 }
 
-                if (int.TryParse(new Regex(casesPattern).Match(regexContent).Groups[1].Value.Replace(" ", ""), out var totalCases))
+                if (!casesRegex.Success || casesRegex.Groups.Count < 2)
+                    throw new CovidParseException($"casesRegex failed");
+
+                if (int.TryParse(casesRegex.Groups[1].Value.Replace(" ", ""), out var newCases))
                 {
                     await covidRepository.AddAsync(new Db.Covid
                     {
-                        TotalCases = totalCases,
+                        NewCases = newCases,
                         Date = DateTime.UtcNow.Date
                     });
                     botPollResultSender.SendPredictionsResultsToChats();
@@ -105,7 +114,7 @@ namespace Telegram.Bot.CovidPoll.Services
                 }
                 else
                 {
-                    throw new CovidParseException($"Cases parse exception, regexContent = {regexContent}");
+                    throw new CovidParseException($"Cases parse exception, regexContent = {casesRegex.Groups[1].Value.Replace(" ", "")}");
                 }
             }
             return false;

@@ -49,13 +49,20 @@ namespace Telegram.Bot.CovidPoll.Services
                 foreach (var chat in chats)
                 {
                     var pollChat = poll.ChatPolls.FirstOrDefault(cp => cp.ChatId == chat.ChatId);
+                    if (pollChat == null)
+                        continue;
+
                     var text = GetAllPredictions(poll, pollChat);
-                    await botClientService.BotClient.SendTextMessageAsync(
-                        chatId: chat.ChatId,
-                        text: text,
-                        parseMode: ParseMode.Html,
-                        cancellationToken: stoppingToken
-                    );
+                    try
+                    {
+                        await botClientService.BotClient.SendTextMessageAsync(
+                            chatId: chat.ChatId,
+                            text: text,
+                            parseMode: ParseMode.Html,
+                            cancellationToken: stoppingToken
+                        );
+                    }
+                    catch (Exception) {}
 
                     await Task.Delay(1000, stoppingToken);
                 }
@@ -85,15 +92,22 @@ namespace Telegram.Bot.CovidPoll.Services
                     foreach (var chat in chats)
                     {
                         var pollChat = poll.ChatPolls.FirstOrDefault(cp => cp.ChatId == chat.ChatId);
+                        if (pollChat == null)
+                            continue;
+                        
                         var covidToday = cases.Cases;
                         var text = GetAllPredictionsResult(poll, pollChat, covidToday);
 
-                        await botClientService.BotClient.SendTextMessageAsync(
-                            chatId: chat.ChatId,
-                            text: text,
-                            parseMode: ParseMode.Html,
-                            cancellationToken: stoppingToken
-                        );
+                        try
+                        {
+                            await botClientService.BotClient.SendTextMessageAsync(
+                                chatId: chat.ChatId,
+                                text: text,
+                                parseMode: ParseMode.Html,
+                                cancellationToken: stoppingToken
+                            );
+                        }
+                        catch (Exception) {}
 
                         await Task.Delay(1000, stoppingToken);
                     }
@@ -107,7 +121,7 @@ namespace Telegram.Bot.CovidPoll.Services
 
         private string GetAllPredictionsResult(Poll poll, PollChat pollChat, int covidToday)
         {
-            var pollOptionsText = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options);
+            var pollOptionsText = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options, true);
             var sb = new StringBuilder($"<strong>Aktualna liczba przypadków:</strong> {covidToday}"); sb.AppendLine(); sb.AppendLine();
             if (pollChat == null || pollChat.PollAnswers.Count == 0)
             {
@@ -123,6 +137,9 @@ namespace Telegram.Bot.CovidPoll.Services
                 var pollAnswers = pollChat.PollAnswers.Where(pollAnswer => pollAnswer.VoteId == indexBestPrediction).ToList();
                 foreach (var pollAnswer in pollAnswers)
                 {
+                    if (pollAnswer.Username == null)
+                        sb.AppendLine($"<a href=\"tg://user?id={pollAnswer.UserId}\">{pollAnswer.UserFirstName}</a> - zaznaczył {pollOptionsText[pollAnswer.VoteId]}");
+                    else
                         sb.AppendLine($"@{pollAnswer.Username} - zaznaczył {pollOptionsText[pollAnswer.VoteId]}");
                 }
             }
@@ -131,8 +148,9 @@ namespace Telegram.Bot.CovidPoll.Services
 
         private string GetAllPredictions(Poll poll, PollChat pollChat)
         {
-            var pollOptionsText = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options);
-            var sb = new StringBuilder("Przewidywania zarażeń na kolejny dzień (ilość przypadków, około):"); sb.AppendLine();
+            var pollOptionsText = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options, true);
+            var sb = new StringBuilder("<strong>Ankiety zostały zamknięte</strong>"); sb.AppendLine();
+            sb.AppendLine("Przewidywania zarażeń na kolejny dzień (ilość przypadków, około):"); sb.AppendLine();
 
             if (pollChat == null || pollChat.PollAnswers.Count == 0)
             {
@@ -143,16 +161,26 @@ namespace Telegram.Bot.CovidPoll.Services
                 for (var i = 0; i < pollOptionsText.Count; i++)
                 {
                     sb.AppendLine($"<strong>{pollOptionsText[i]}</strong>");
-                    foreach (var pollAnswer in pollChat.PollAnswers.Where(pollAnswer => pollAnswer.VoteId == i))
+                    var pollAnswers = pollChat.PollAnswers.Where(pollAnswer => pollAnswer.VoteId == i).ToList();
+                    foreach (var pollAnswer in pollAnswers)
                     {
-                        sb.Append($"@{pollAnswer.Username} ");
+                        if (pollAnswer.Username == null)
+                            sb.Append($"<a href=\"tg://user?id={pollAnswer.UserId}\">{pollAnswer.UserFirstName}</a> ");
+                        else
+                            sb.Append($"@{pollAnswer.Username} ");
                     }
-                    sb.AppendLine(); sb.AppendLine();
+                    if (pollAnswers.Count > 0)
+                        sb.AppendLine(); 
+
+                    sb.AppendLine();
                 }
             }
             var predictionsCount = poll.ChatPolls.SelectMany(cp => cp.PollAnswers).Count();
             if (predictionsCount > 0)
             {
+                //var predictions = poll.ChatPolls.SelectMany(cp => cp.PollAnswers)
+                //.GroupBy(pa => pa.UserId, (pa, y) => y.First()).Sum(po => int.Parse(poll.Options[po.VoteId]));
+
                 var predictions = poll.ChatPolls.SelectMany(cp => cp.PollAnswers)
                     .Sum(pa => int.Parse(poll.Options[pa.VoteId]));
 

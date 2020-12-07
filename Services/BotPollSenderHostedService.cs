@@ -82,11 +82,18 @@ namespace Telegram.Bot.CovidPoll.Services
             {
                 foreach (var chat in chats)
                 {
-                    await botClientService.BotClient.SendTextMessageAsync(
-                        chatId: chat.ChatId,
-                        text: "Niestety, nie posiadamy aktualnych wyników zakażeń, aby udostępnić możliwość przewidywań. Kolejna próba nastąpi za 1h.",
-                        cancellationToken: stoppingToken
-                    );
+                    try
+                    {
+                        await botClientService.BotClient.SendTextMessageAsync(
+                            chatId: chat.ChatId,
+                            text:
+                            "Niestety, nie posiadamy aktualnych wyników zakażeń, aby wyświetlić wyniki i udostępnić możliwość przewidywań. Kolejna próba nastąpi za 1h.",
+                            cancellationToken: stoppingToken
+                        );
+                    }
+                    catch (Exception) {}
+
+                    await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                 }
                 Log.Information($"[{nameof(BotPollSenderHostedService)}] - Polls haven't been sent. Not enough information about covid.");
             }
@@ -97,13 +104,17 @@ namespace Telegram.Bot.CovidPoll.Services
 
                 foreach (var chat in chats)
                 {
-                    var sendedPoll = await SendPoll(stoppingToken, chat.ChatId, poll.Options);
-                    await pollChatRepository.AddAsync(poll.Id, new Db.PollChat()
+                    try
                     {
-                        ChatId = sendedPoll.Chat.Id,
-                        PollId = sendedPoll.Poll.Id,
-                        MessageId = sendedPoll.MessageId
-                    });
+                        var sendedPoll = await SendPoll(stoppingToken, chat.ChatId, poll.Options);
+                        await pollChatRepository.AddAsync(poll.Id, new Db.PollChat()
+                        {
+                            ChatId = sendedPoll.Chat.Id,
+                            PollId = sendedPoll.Poll.Id,
+                            MessageId = sendedPoll.MessageId
+                        });
+                    }
+                    catch (Exception) {}
 
                     await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                 }
@@ -134,7 +145,11 @@ namespace Telegram.Bot.CovidPoll.Services
                 await pollRepository.SetClosedAsync(poll.Id, true);
                 foreach (var chatPoll in chatPolls)
                 {
-                    await StopPoll(stoppingToken, chatPoll.ChatId, chatPoll.MessageId);
+                    try
+                    {
+                        await StopPoll(stoppingToken, chatPoll.ChatId, chatPoll.MessageId);
+                    }
+                    catch (Exception) {}
 
                     await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                 }

@@ -35,13 +35,14 @@ namespace Telegram.Bot.CovidPoll.Repositories
             return mongoDb.Polls.Find(p => p.Id == pollId && p.ChatPolls.Any(cp =>
                 cp.PollId.Equals(pollChatId) && cp.PollAnswers.Any(pa => pa.UserId == userId))).AnyAsync();
         }
-        public Task AddVoteAsync(long userId, string username, ObjectId pollId, string pollTelegramId, int vote)
+        public Task AddVoteAsync(long userId, string username, string userFirstName, ObjectId pollId, string pollTelegramId, int vote)
         {
             var pollAnswers = new Db.PollAnswer()
             {
                 UserId = userId,
                 VoteId = vote,
-                Username = username
+                Username = username,
+                UserFirstName = userFirstName
             };
             return mongoDb.Polls.UpdateOneAsync(p => p.Id == pollId && p.ChatPolls.Any(cp => cp.PollId.Equals(pollTelegramId)),
                 Builders<Poll>.Update.Push(p => p.ChatPolls[-1].PollAnswers, pollAnswers));
