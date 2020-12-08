@@ -44,11 +44,11 @@ namespace Telegram.Bot.CovidPoll.Services
                     }
                     else if (covidToday / 1000 > 1)
                     {
-                        covidOption = i < 5 ? covidToday - 100 * i : covidToday + 100 * (i - 4);
+                        covidOption = i < 5 ? covidToday - 500 * i : covidToday + 500 * (i - 4);
                     }
                     else if (covidToday / 100 > 1)
                     {
-                        covidOption = i < 5 ? covidToday - 10 * i : covidToday + 10 * (i - 4);
+                        covidOption = i < 5 ? covidToday - 20 * i : covidToday + 20 * (i - 4);
                     }
                     else
                     {

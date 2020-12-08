@@ -155,14 +155,16 @@ namespace Telegram.Bot.CovidPoll.Services
                 if (ranking != null)
                 {
                     if (ranking.Winners.Count == 0)
-                        sb.AppendLine(); sb.AppendLine("Brak osób, które poprawnie przewidziały.");
-
-                    foreach (var winner in ranking.Winners)
                     {
-                        if (winner.Username == null)
-                            sb.AppendLine($"<a href=\"tg://user?id={winner.UserId}\">{winner.UserFirstName}</a> - {winner.WinsCount} raz/y");
+                        sb.AppendLine(); sb.AppendLine("Brak osób, które poprawnie przewidziały.");
+                    }
+
+                    foreach (var winner in ranking.Winners.OrderByDescending(w => w.WinsCount).Select((value, index) => new { value, index }))
+                    {
+                        if (winner.value.Username == null)
+                            sb.AppendLine($"{winner.index+1}. <a href=\"tg://user?id={winner.value.UserId}\">{winner.value.UserFirstName}</a> - {winner.value.WinsCount} raz/y");
                         else
-                            sb.AppendLine($"@{winner.Username} - {winner.WinsCount} raz/y");
+                            sb.AppendLine($"{winner.index+1}. @{winner.value.Username} - {winner.value.WinsCount} raz/y");
                     }
                 }
 
