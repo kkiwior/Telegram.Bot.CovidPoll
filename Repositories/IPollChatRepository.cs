@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using Telegram.Bot.CovidPoll.Db;
 
@@ -11,5 +12,7 @@ namespace Telegram.Bot.CovidPoll.Repositories
         Task<bool> CheckIfAlreadyVotedAsync(long userId, ObjectId pollId, string pollChatId);
         Task AddVoteAsync(long userId, string userName, string userFirstName, ObjectId pollId, string pollTelegramId, int vote);
         Task RemoveVoteAsync(long userId, ObjectId pollId, string pollTelegramId);
+        Task<PollChat> FindLatestByChatIdAsync(long chatId);
+        Task UpdateLastCommandDateAsync(long chatId, DateTime date);
     }
 }

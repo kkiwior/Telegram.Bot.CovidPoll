@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using System.Linq;
+using System;
 
 namespace Telegram.Bot.CovidPoll.Repositories
 {
@@ -51,6 +52,10 @@ namespace Telegram.Bot.CovidPoll.Repositories
         public Task<ChatRanking> GetChatRankingAsync(long chatId)
         {
             return mongoDb.ChatsRankings.Find(c => c.ChatId == chatId).FirstOrDefaultAsync();
+        }
+        public Task UpdateLastCommandDateAsync(long chatId, DateTime date)
+        {
+            return mongoDb.ChatsRankings.UpdateOneAsync(cr => cr.ChatId == chatId, Builders<ChatRanking>.Update.Set(cr => cr.LastCommandDate, date));
         }
     }
 }

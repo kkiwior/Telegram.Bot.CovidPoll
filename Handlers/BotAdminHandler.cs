@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Options;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Config;
-using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Services;
@@ -70,7 +68,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
             //            var pollAnswers = pollChat.PollAnswers.Where(pollAnswer => pollAnswer.VoteId == indexBestPrediction).ToList();
             //            var chatRanking = new List<ChatWinner>();
 
-            //            await pollChatRankingRepository.AddWinsCount(pollAnswers, pollChat.ChatId);
+            //            await pollChatRankingRepository.AddWinsCountAsync(pollAnswers, pollChat.ChatId);
             //        }
             //    }
             //}

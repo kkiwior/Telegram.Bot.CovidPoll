@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Telegram.Bot.CovidPoll.Db
 {
@@ -8,6 +9,7 @@ namespace Telegram.Bot.CovidPoll.Db
         public int MessageId { get; set; }
         public string PollId { get; set; }
         public List<PollAnswer> PollAnswers { get; set; } = new List<PollAnswer>();
+        public DateTime LastCommandDate { get; set; } = DateTime.UtcNow;
     }
     public class PollAnswer
     {

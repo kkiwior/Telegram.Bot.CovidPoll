@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Telegram.Bot.CovidPoll.Db;
-using Telegram.Bot.Types;
-using Poll = Telegram.Bot.CovidPoll.Db.Poll;
 
 namespace Telegram.Bot.CovidPoll.Repositories
 {
@@ -51,6 +49,17 @@ namespace Telegram.Bot.CovidPoll.Repositories
             return mongoDb.Polls.UpdateOneAsync(
                 p => p.Id == pollId && p.ChatPolls.Any(cp => cp.PollId.Equals(pollTelegramId)),
                 Builders<Poll>.Update.PullFilter(p => p.ChatPolls[-1].PollAnswers, cp => cp.UserId == userId));
+        }
+        public async Task<PollChat> FindLatestByChatIdAsync(long chatId)
+        {
+            var poll = await pollRepository.FindLatestAsync();
+            return poll.ChatPolls.Where(cp => cp.ChatId == chatId).FirstOrDefault();
+        }
+        public async Task UpdateLastCommandDateAsync(long chatId, DateTime date)
+        {
+            var poll = await pollRepository.FindLatestAsync();
+            await mongoDb.Polls.UpdateOneAsync(p => p.Id == poll.Id && p.ChatPolls.Any(cp => cp.ChatId == chatId), 
+                Builders<Poll>.Update.Set(p => p.ChatPolls[-1].LastCommandDate, date));
         }
     }
 }

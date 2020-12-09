@@ -32,6 +32,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
         private async void BotClient_OnUpdate(object sender, UpdateEventArgs e)
         {
+            //var test = (await botClientService.BotClient.GetChatMemberAsync(e.Update.Message?.Chat.Id, botClientService.BotClient.BotId)).CanPinMessages;
             if (e.Update.Message?.NewChatMembers?.Any(n => n.Id == botClientService.BotClient.BotId) == true)
             {
                 var chat = await chatRepository.CheckExistsByIdAsync(e.Update.Message.Chat.Id);
