@@ -54,7 +54,6 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<IBotEvent, BotReplyPollHandler>();
                      services.AddSingleton<QueueService>();
                      services.AddSingleton<PollOptionsService>();
-                     services.AddSingleton<QueueService>();
                      services.AddSingleton<BotPollResultSenderService>();
                      services.AddHostedService<CovidTrackingHostedService>();
                      services.AddHostedService<BotEventsHostedService>();
