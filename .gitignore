@@ -485,4 +485,4 @@ MigrationBackup/
 # End of https://www.toptal.com/developers/gitignore/api/aspnetcore,visualstudio
 
 docker-compose.yml
-appsettings.json
+appsettings.Production.json
