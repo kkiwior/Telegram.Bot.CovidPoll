@@ -42,10 +42,10 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)
         {
             var n = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommandHelper.BotCommands.ranking, e.Message.Text);
-            if (n.CommandCorrect && e.Message.Chat.Type == ChatType.Supergroup || e.Message.Chat.Type == ChatType.Group)
+            if (n.CommandCorrect && (e.Message.Chat.Type == ChatType.Supergroup || e.Message.Chat.Type == ChatType.Group))
             {
                 var ranking = await pollChatRankingRepository.GetChatRankingAsync(e.Message.Chat.Id);
-                if (ranking == null || ranking.LastCommandDate.AddMinutes(5) >= DateTime.UtcNow)
+                if (ranking == null || ranking.LastCommandDate.AddSeconds(4) >= DateTime.UtcNow)
                     return;
 
                 await pollChatRankingRepository.UpdateLastCommandDateAsync(e.Message.Chat.Id, DateTime.UtcNow);
@@ -59,7 +59,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 {
                     sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName} - {winner.value.WinsCount} raz/y");
                 }
-                sb.AppendLine(); sb.AppendLine("Komendę można wywołać co 5 minut.");
+                sb.AppendLine(); sb.AppendLine("Komendę można wywołać co 4 sekundy.");
                 try
                 {
                     await botClientService.BotClient.SendTextMessageAsync(

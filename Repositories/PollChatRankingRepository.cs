@@ -14,16 +14,19 @@ namespace Telegram.Bot.CovidPoll.Repositories
         {
             this.mongoDb = mongoDb;
         }
-        public Task AddChatToRankingAsync(long chatId)
+        public Task AddChatToRankingAsync(ChatRanking chatRanking)
         {
-            var chatRanking = new ChatRanking() { ChatId = chatId };
             return mongoDb.ChatsRankings.InsertOneAsync(chatRanking);
         }
         public async Task AddWinsCountAsync(IList<PollAnswer> winners, long chatId)
         {
             var ranking = await this.GetChatRankingAsync(chatId);
             if (ranking == null)
-                await this.AddChatToRankingAsync(chatId);
+            {
+                ranking = new ChatRanking() { ChatId = chatId };
+                await this.AddChatToRankingAsync(ranking);
+            }
+            
 
             foreach (var winner in winners)
             {

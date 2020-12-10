@@ -148,7 +148,8 @@ namespace Telegram.Bot.CovidPoll.Services
                     else
                         sb.AppendLine($"@{pollAnswer.Username} - zaznaczył {pollOptionsText[pollAnswer.VoteId]}");
                 }
-                await pollChatRankingRepository.AddWinsCountAsync(pollAnswers, pollChat.ChatId);
+                if (pollAnswers?.Count > 0)
+                    await pollChatRankingRepository.AddWinsCountAsync(pollAnswers, pollChat.ChatId);
 
                 sb.AppendLine(); sb.AppendLine("Ogólny ranking (przewidzieli poprawnie):");
                 var ranking = await pollChatRankingRepository.GetChatRankingAsync(pollChat.ChatId);

@@ -35,7 +35,6 @@ namespace Telegram.Bot.CovidPoll
                      services.Configure<CovidTrackingSettings>(hostContext.Configuration.GetSection("CovidTrackingSettings"));
                      services.AddSingleton<MongoDb>();
                      services.AddSingleton<BotClientService>();
-                     services.AddSingleton<BotPollSenderHostedService>();
                      services.AddSingleton<CovidCalculateService>();
                      services.AddHttpClient();
                      services.AddSingleton<IBotCommandHelper, BotCommandHelper>();
