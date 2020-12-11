@@ -16,6 +16,7 @@ namespace Telegram.Bot.CovidPoll.Services
     {
         private readonly BotClientService botClientService;
         private readonly IOptions<BotSettings> botSettings;
+        private readonly IOptions<CovidTrackingSettings> covidSettings;
         private readonly IChatRepository chatRepository;
         private readonly IPollRepository pollRepository;
         private readonly PollOptionsService pollOptionsService;
@@ -26,6 +27,7 @@ namespace Telegram.Bot.CovidPoll.Services
 
         public BotPollSenderHostedService(BotClientService botClientService,
                                           IOptions<BotSettings> botSettings,
+                                          IOptions<CovidTrackingSettings> covidSettings,
                                           IChatRepository chatRepository,
                                           IPollRepository pollRepository,
                                           PollOptionsService pollOptionsService,
@@ -36,6 +38,7 @@ namespace Telegram.Bot.CovidPoll.Services
         {
             this.botClientService = botClientService;
             this.botSettings = botSettings;
+            this.covidSettings = covidSettings;
             this.chatRepository = chatRepository;
             this.pollRepository = pollRepository;
             this.pollOptionsService = pollOptionsService;
@@ -53,6 +56,13 @@ namespace Telegram.Bot.CovidPoll.Services
         {
             var pollsStart = DateTime.UtcNow.Date.AddHours(botSettings.Value.PollsStartHourUtc);
             var pollsEnd = DateTime.UtcNow.Date.AddHours(botSettings.Value.PollsEndHourUtc);
+            //var pollCheck = await pollRepository.FindLatestAsync();
+            //if (pollCheck?.Date.AddDays(1))
+            //{
+            //    await StopPolls(stoppingToken);
+            //    botPollResultSender.SendPredictionsToChats();
+            //}
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 if (DateTime.UtcNow >= pollsStart && DateTime.UtcNow <= pollsEnd)
@@ -63,7 +73,7 @@ namespace Telegram.Bot.CovidPoll.Services
                     }
                     else
                     {
-                        await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                        await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                     }
                 }
                 else if (DateTime.UtcNow >= pollsEnd)
@@ -83,7 +93,7 @@ namespace Telegram.Bot.CovidPoll.Services
             var chats = await chatRepository.GetAll();
             if (poll == null)
             {
-                queueService.QueueBackgroundWorkItem(async stoppingToken =>
+                /*queueService.QueueBackgroundWorkItem(async stoppingToken =>
                 {
                     foreach (var chat in chats)
                     {
@@ -100,7 +110,7 @@ namespace Telegram.Bot.CovidPoll.Services
 
                         await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
-                });
+                });*/
                 Log.Information($"[{nameof(BotPollSenderHostedService)}] - Polls haven't been sent. Not enough information about covid.");
             }
             else if (!poll.ChatPollsSended)

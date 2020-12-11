@@ -30,7 +30,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 new BotCommand 
                 { 
                     Command = "ranking", 
-                    Description = "Pokazuje aktualny ranking osób najlepiej przewidujących (nie wyświetli nic, jeżeli nie było jeszcze wyników przewidywań)"
+                    Description = "Wyświetla ranking osób najlepiej przewidujących."
                 } 
             };
 

@@ -56,7 +56,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         else
                         {
                             Log.Error($"[{nameof(CovidTrackingHostedService)}]: Problem with downloading data");
-                            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+                            await Task.Delay(TimeSpan.FromMinutes(20), stoppingToken);
                         }
                     }
                     catch (CovidParseException ex)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Config;
+using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.Types;
@@ -16,21 +17,28 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private readonly IChatRepository chatRepository;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IPollRepository pollRepository;
+        private readonly IPollChatRepository pollChatRepository;
         private readonly IOptions<BotSettings> botOptions;
         private readonly IOptions<CovidTrackingSettings> covidTrackingOptions;
+        private readonly IPollConverterHelper pollConverterHelper;
 
         public BotJoinLeaveHandler(BotClientService botClientService,
                                    IChatRepository chatRepository,
                                    IPollChatRankingRepository pollChatRankingRepository,
                                    IPollRepository pollRepository,
+                                   IPollChatRepository pollChatRepository,
                                    IOptions<BotSettings> botOptions,
-                                   IOptions<CovidTrackingSettings> covidTrackingOptions)
+                                   IOptions<CovidTrackingSettings> covidTrackingOptions,
+                                   IPollConverterHelper pollConverterHelper)
         {
             this.botClientService = botClientService;
             this.chatRepository = chatRepository;
+            this.pollChatRepository = pollChatRepository;
             this.pollChatRankingRepository = pollChatRankingRepository;
+            this.pollRepository = pollRepository;
             this.botOptions = botOptions;
             this.covidTrackingOptions = covidTrackingOptions;
+            this.pollConverterHelper = pollConverterHelper;
         }
 
         public IList<BotCommand> Command => null;
@@ -63,6 +71,27 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         $"4. Aktualne zakażenia oraz ranking osób najlepiej przewidujących pojawia się o godzinie: {covidTrackingOptions.Value.FetchDataHourUtc} UTC",
                         parseMode: Types.Enums.ParseMode.Html
                     );
+                    var latestPoll = await pollRepository.FindLatestAsync();
+                    if (latestPoll?.ChatPollsSended == true && latestPoll?.ChatPollsClosed == false)
+                    {
+                        var pollChat = await pollChatRepository.FindLatestByChatIdAsync(e.Update.Message.Chat.Id);
+                        if (pollChat != null)
+                            return;
+
+                        latestPoll.Options = pollConverterHelper.ConvertOptionsToTextOptions(latestPoll.Options);
+                        var poll = await botClientService.BotClient.SendPollAsync(
+                            chatId: e.Update.Message.Chat.Id,
+                            question: "Ile przewidujesz zakażeń na jutro?",
+                            options: latestPoll.Options,
+                            isAnonymous: false
+                        );
+                        await pollChatRepository.AddAsync(latestPoll.Id, new Db.PollChat()
+                        {
+                            ChatId = e.Update.Message.Chat.Id,
+                            PollId = poll.Poll.Id,
+                            MessageId = poll.MessageId
+                        });
+                    }
                 }
                 catch (Exception) {}
             }

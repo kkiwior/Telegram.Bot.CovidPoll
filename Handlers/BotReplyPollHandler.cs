@@ -32,7 +32,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 new BotCommand
                 {
                     Command = "poll",
-                    Description = "Wyświetla aktualną ankietę. Jeżeli nie ma żadnej ankiety, to nic nie wyświetli."
+                    Description = "Wyświetla aktualną ankietę, jeżeli istnieje."
                 }
             };
 
