@@ -68,7 +68,10 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         "1. Bot ma za zadanie przewidywać ilość zakażeń w kolejnym dniu na podstawie ankiet.\n" +
                         $"2. Ankiety pojawiają się o godzinie: {botOptions.Value.PollsStartHourUtc} UTC\n" +
                         $"3. Ankiety są zamykane oraz wyświetlają się przewidywania zakażeń o godzinie: {botOptions.Value.PollsEndHourUtc} UTC\n" +
-                        $"4. Aktualne zakażenia oraz ranking osób najlepiej przewidujących pojawia się o godzinie: {covidTrackingOptions.Value.FetchDataHourUtc} UTC",
+                        $"4. Aktualne zakażenia oraz ranking osób najlepiej przewidujących pojawia się o godzinie: {covidTrackingOptions.Value.FetchDataHourUtc} UTC\n" +
+                        "<b>Dostępne komendy:</bd>\n" +
+                        "1. /ranking - wyświetla aktualny ranking osób najlepiej przewidujących.\n" +
+                        "2. /poll - wyświetla aktualną ankietę, jeżeli żadna ankieta nie jest dostępna, to nic nie wyświetli.",
                         parseMode: Types.Enums.ParseMode.Html
                     );
                     var latestPoll = await pollRepository.FindLatestAsync();

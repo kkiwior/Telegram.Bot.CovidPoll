@@ -187,19 +187,19 @@ namespace Telegram.Bot.CovidPoll.Services
             {
                 for (var i = 0; i < pollOptionsText.Count; i++)
                 {
-                    sb.AppendLine($"<strong>{pollOptionsText[i]}</strong>");
                     var pollAnswers = pollChat.PollAnswers.Where(pollAnswer => pollAnswer.VoteId == i).ToList();
-                    foreach (var pollAnswer in pollAnswers)
-                    {
-                        if (pollAnswer.Username == null)
-                            sb.Append($"<a href=\"tg://user?id={pollAnswer.UserId}\">{pollAnswer.UserFirstName}</a> ");
-                        else
-                            sb.Append($"@{pollAnswer.Username} ");
-                    }
                     if (pollAnswers.Count > 0)
-                        sb.AppendLine(); 
-
-                    sb.AppendLine();
+                    {
+                        sb.AppendLine($"<strong>{pollOptionsText[i]}</strong>");
+                        foreach (var pollAnswer in pollAnswers)
+                        {
+                            if (pollAnswer.Username == null)
+                                sb.Append($"<a href=\"tg://user?id={pollAnswer.UserId}\">{pollAnswer.UserFirstName}</a> ");
+                            else
+                                sb.Append($"@{pollAnswer.Username} ");
+                        }
+                        sb.AppendLine(); sb.AppendLine();
+                    }
                 }
             }
             var predictionsCount = poll.ChatPolls.SelectMany(cp => cp.PollAnswers).Count();
