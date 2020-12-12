@@ -67,7 +67,7 @@ namespace Telegram.Bot.CovidPoll.Services
             {
                 if (DateTime.UtcNow >= pollsStart && DateTime.UtcNow <= pollsEnd)
                 {
-                    if (await SendPolls(stoppingToken, pollsEnd))
+                    if (await SendPolls(stoppingToken))
                     {
                         pollsStart = DateTime.UtcNow.Date.AddDays(1).AddHours(botSettings.Value.PollsStartHourUtc);
                     }
@@ -86,7 +86,7 @@ namespace Telegram.Bot.CovidPoll.Services
             }
         }
 
-        private async Task<bool> SendPolls(CancellationToken stoppingToken, DateTime pollsEnd)
+        private async Task<bool> SendPolls(CancellationToken stoppingToken)
         {
             Log.Information($"[{nameof(BotPollSenderHostedService)}] - Starting sending polls...");
             var poll = await pollOptionsService.GetPollOptionsAsync(DateTime.UtcNow.Date);
@@ -107,7 +107,6 @@ namespace Telegram.Bot.CovidPoll.Services
                             );
                         }
                         catch (Exception) { }
-
                         await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
                 });*/
@@ -124,7 +123,7 @@ namespace Telegram.Bot.CovidPoll.Services
                     {
                         try
                         {
-                            var sendedPoll = await SendPoll(stoppingToken, chat.ChatId, poll.Options, pollsEnd);
+                            var sendedPoll = await SendPoll(stoppingToken, chat.ChatId, poll.Options);
                             await pollChatRepository.AddAsync(poll.Id, new Db.PollChat()
                             {
                                 ChatId = sendedPoll.Chat.Id,
@@ -150,24 +149,47 @@ namespace Telegram.Bot.CovidPoll.Services
 
         private async Task StopPolls(CancellationToken stoppingToken)
         {
+            Log.Information($"[{nameof(BotPollSenderHostedService)}] - Starting closing polls...");
             var poll = await pollRepository.FindLatestAsync();
             if (poll == null || poll.ChatPollsClosed)
             {
-                Log.Information($"[{nameof(BotPollSenderHostedService)}] - There are no polls to close.");
+                Log.Information($"[{nameof(BotPollSenderHostedService)}] - There is nothing to close.");
                 return;
             }
-            await pollRepository.SetClosedAsync(poll.Id, true);
-            Log.Information($"[{nameof(BotPollSenderHostedService)}] - Polls closed.");
+
+            var chatPolls = poll.ChatPolls;
+            if (chatPolls != null)
+            {
+                queueService.QueueBackgroundWorkItem(async stoppingToken =>
+                {
+                    await pollRepository.SetClosedAsync(poll.Id, true);
+                    foreach (var chatPoll in chatPolls)
+                    {
+                        try
+                        {
+                            await StopPoll(stoppingToken, chatPoll.ChatId, chatPoll.MessageId);
+                        }
+                        catch (Exception) { }
+
+                        await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                    }
+                });
+            }
+            Log.Information($"[{nameof(BotPollSenderHostedService)}] - All polls have been closed.");
         }
 
-        private Task<Message> SendPoll(CancellationToken stoppingToken, long chatId, IList<string> pollOptions, DateTime pollEnd)
+        private Task StopPoll(CancellationToken stoppingToken, long chatId, int messageId)
+        {
+            return botClientService.BotClient.StopPollAsync(chatId, messageId, cancellationToken: stoppingToken);
+        }
+
+        private Task<Message> SendPoll(CancellationToken stoppingToken, long chatId, IList<string> pollOptions)
         {
             return botClientService.BotClient.SendPollAsync(
                 chatId: chatId,
                 question: "Ile przewidujesz zakażeń na jutro?",
                 options: pollOptions,
                 isAnonymous: false,
-                closeDate: pollEnd,
                 cancellationToken: stoppingToken
             );
         }
