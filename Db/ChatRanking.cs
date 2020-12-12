@@ -19,5 +19,6 @@ namespace Telegram.Bot.CovidPoll.Db
         public string Username { get; set; }
         public string UserFirstName { get; set; }
         public int WinsCount { get; set; }
+        public int TotalVotes { get; set; }
     }
 }
