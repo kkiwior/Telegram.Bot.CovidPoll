@@ -7,6 +7,7 @@ using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Models;
 using Telegram.Bot.Types;
 
 namespace Telegram.Bot.CovidPoll.Handlers
@@ -21,6 +22,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private readonly IOptions<BotSettings> botOptions;
         private readonly IOptions<CovidTrackingSettings> covidTrackingOptions;
         private readonly IPollConverterHelper pollConverterHelper;
+        private readonly BotMessageHelper botMessageHelper;
 
         public BotJoinLeaveHandler(BotClientService botClientService,
                                    IChatRepository chatRepository,
@@ -29,7 +31,8 @@ namespace Telegram.Bot.CovidPoll.Handlers
                                    IPollChatRepository pollChatRepository,
                                    IOptions<BotSettings> botOptions,
                                    IOptions<CovidTrackingSettings> covidTrackingOptions,
-                                   IPollConverterHelper pollConverterHelper)
+                                   IPollConverterHelper pollConverterHelper,
+                                   BotMessageHelper botMessageHelper)
         {
             this.botClientService = botClientService;
             this.chatRepository = chatRepository;
@@ -39,6 +42,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
             this.botOptions = botOptions;
             this.covidTrackingOptions = covidTrackingOptions;
             this.pollConverterHelper = pollConverterHelper;
+            this.botMessageHelper = botMessageHelper;
         }
 
         public IList<BotCommand> Command => null;
@@ -59,7 +63,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                     return;
 
                 await chatRepository.AddAsync(new Db.Chat { ChatId = e.Update.Message.Chat.Id });
-                await pollChatRankingRepository.AddWinsCountAsync(new List<Db.PollAnswer>(), e.Update.Message.Chat.Id);
+                await pollChatRankingRepository.AddWinsCountAsync(new List<PredictionsModel>(), e.Update.Message.Chat.Id);
                 try
                 {
                     await botClientService.BotClient.SendTextMessageAsync(
@@ -71,7 +75,8 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         $"4. Aktualne zakażenia oraz ranking osób najlepiej przewidujących pojawia się o godzinie: {covidTrackingOptions.Value.FetchDataHourUtc} UTC\n" +
                         "\n<b>Dostępne komendy:</b>\n" +
                         "1. /ranking - wyświetla aktualny ranking osób najlepiej przewidujących.\n" +
-                        "2. /poll - wyświetla aktualną ankietę, jeżeli żadna ankieta nie jest dostępna, to nic nie wyświetli.",
+                        "2. /poll - wyświetla aktualną ankietę, jeżeli żadna ankieta nie jest dostępna, to nic nie wyświetli.\n" +
+                        "3. /vote 35000 - pozwala zagłosować poza ankietą",
                         parseMode: Types.Enums.ParseMode.Html
                     );
                     var latestPoll = await pollRepository.FindLatestAsync();
@@ -81,18 +86,14 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         if (pollChat != null)
                             return;
 
-                        latestPoll.Options = pollConverterHelper.ConvertOptionsToTextOptions(latestPoll.Options);
-                        var poll = await botClientService.BotClient.SendPollAsync(
-                            chatId: e.Update.Message.Chat.Id,
-                            question: "Ile przewidujesz zakażeń na jutro?",
-                            options: latestPoll.Options,
-                            isAnonymous: false
-                        );
+                        var convertedPollOptions = pollConverterHelper.ConvertOptionsToTextOptions(latestPoll.Options);
+                        var sendedPoll = await botMessageHelper.SendPollAsync(e.Update.Message.Chat.Id, convertedPollOptions);
                         await pollChatRepository.AddAsync(latestPoll.Id, new Db.PollChat()
                         {
                             ChatId = e.Update.Message.Chat.Id,
-                            PollId = poll.Poll.Id,
-                            MessageId = poll.MessageId
+                            PollId = sendedPoll.PollMessage.Poll.Id,
+                            MessageId = sendedPoll.PollMessage.MessageId,
+                            NonPollMessageId = sendedPoll.NonPollMessage.MessageId
                         });
                     }
                 }

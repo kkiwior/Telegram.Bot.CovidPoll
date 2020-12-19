@@ -16,5 +16,6 @@ namespace Telegram.Bot.CovidPoll.Repositories
         Task<Poll> FindByDateAsync(DateTime date);
         Task SetPredictionsResultsSendedAsync(ObjectId pollId, bool pollsPredictionsResults);
         Task SetPredictionsSendedAsync(ObjectId pollId, bool pollsPredictions);
+        Task<Poll> FindLatestWithoutChatsAsync();
     }
 }

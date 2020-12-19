@@ -20,6 +20,7 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly CovidCalculateService covidCalculateService;
         private readonly IPollConverterHelper pollConverterHelper;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
+        private readonly PollVotesConverterHelper pollVotesConverterHelper;
 
         public BotPollResultSenderService(QueueService queueService,
                                           IChatRepository chatRepository,
@@ -27,7 +28,8 @@ namespace Telegram.Bot.CovidPoll.Services
                                           IPollRepository pollRepository,
                                           CovidCalculateService covidCalculateService,
                                           IPollConverterHelper pollConverterHelper,
-                                          IPollChatRankingRepository pollChatRankingRepository)
+                                          IPollChatRankingRepository pollChatRankingRepository,
+                                          PollVotesConverterHelper pollVotesConverterHelper)
         {
             this.queueService = queueService;
             this.chatRepository = chatRepository;
@@ -36,6 +38,7 @@ namespace Telegram.Bot.CovidPoll.Services
             this.covidCalculateService = covidCalculateService;
             this.pollConverterHelper = pollConverterHelper;
             this.pollChatRankingRepository = pollChatRankingRepository;
+            this.pollVotesConverterHelper = pollVotesConverterHelper;
         }
 
         public void SendPredictionsToChats()
@@ -128,7 +131,7 @@ namespace Telegram.Bot.CovidPoll.Services
         private async Task<string> GetAllPredictionsResult(Poll poll, PollChat pollChat, int covidToday)
         {
             var pollOptionsText = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options, true);
-            var sb = new StringBuilder($"<strong>Aktualna liczba przypadków:</strong> {covidToday}"); sb.AppendLine(); sb.AppendLine();
+            var sb = new StringBuilder($"<strong>Aktualna liczba przypadków:</strong> {covidToday:### ###}"); sb.AppendLine(); sb.AppendLine();
             if (pollChat == null || pollChat.PollAnswers.Count == 0)
             {
                 sb.AppendLine("Nikt nie próbował przewidywać na tej grupie.");
@@ -136,22 +139,27 @@ namespace Telegram.Bot.CovidPoll.Services
             else
             {
                 var listOfChoices = pollChat.PollAnswers.ConvertAll(pa => poll.Options[pa.VoteId]).ToList();
-                var bestPrediction = listOfChoices.Aggregate((x, y) => Math.Abs(int.Parse(x) - covidToday) < Math.Abs(int.Parse(y) - covidToday) ? x : y);
-                var indexBestPrediction = poll.Options.IndexOf(bestPrediction);
+                listOfChoices.AddRange(pollChat.NonPollAnswers.ConvertAll(npa => npa.VoteNumber).ToList());
+                //var bestPrediction = listOfChoices.Aggregate((x, y) => Math.Abs(x - covidToday) < Math.Abs(y - covidToday) ? x : y);
 
                 sb.AppendLine(@"Najlepiej przewidzieli:");
-                var pollAnswers = pollChat.PollAnswers.Where(pollAnswer => pollAnswer.VoteId == indexBestPrediction).ToList();
-                foreach (var pollAnswer in pollAnswers)
+                var answers = pollVotesConverterHelper.ConvertPollVotes(poll, pollChat, covidToday).ToList();
+                foreach (var answer in answers.Where(p => p.Points != 0))
                 {
-                    if (pollAnswer.Username == null)
-                        sb.AppendLine($"<a href=\"tg://user?id={pollAnswer.UserId}\">{pollAnswer.UserFirstName}</a> - zaznaczył {pollOptionsText[pollAnswer.VoteId]}");
+                    var voteAndPoints = 
+                        $"{(answer.FromPoll ? pollOptionsText[poll.Options.IndexOf(answer.VoteNumber)] : answer.VoteNumber):### ###} (+{answer.Points})";
+                    if (answer.Username == null)
+                        sb.AppendLine($"<a href=\"tg://user?id={answer.UserId}\">{answer.UserFirstName}</a> - zaznaczył {voteAndPoints}");
                     else
-                        sb.AppendLine($"@{pollAnswer.Username} - zaznaczył {pollOptionsText[pollAnswer.VoteId]}");
+                        sb.AppendLine($"@{answer.Username} - zaznaczył {voteAndPoints}");
                 }
-                if (pollAnswers?.Count > 0)
-                    await pollChatRankingRepository.AddWinsCountAsync(pollAnswers, pollChat.ChatId);
+                if (answers?.Where(p => p.Points != 0).ToList().Count == 0)
+                    sb.AppendLine($"Nikt nie był w okolicach wyniku.");
 
-                sb.AppendLine(); sb.AppendLine("Ogólny ranking (przewidzieli poprawnie):");
+                if (answers?.Count > 0)
+                    await pollChatRankingRepository.AddWinsCountAsync(answers, pollChat.ChatId);
+
+                sb.AppendLine(); sb.AppendLine("Ogólny ranking:");
                 var ranking = await pollChatRankingRepository.GetChatRankingAsync(pollChat.ChatId);
                 if (ranking != null)
                 {
@@ -160,15 +168,14 @@ namespace Telegram.Bot.CovidPoll.Services
                         sb.AppendLine(); sb.AppendLine("Brak osób, które poprawnie przewidziały.");
                     }
 
-                    foreach (var winner in ranking.Winners.OrderByDescending(w => w.WinsCount).Select((value, index) => new { value, index }))
+                    foreach (var winner in ranking.Winners.OrderByDescending(w => w.Points).Select((value, index) => new { value, index }))
                     {
                         if (winner.value.Username == null)
-                            sb.AppendLine($"{winner.index+1}. <a href=\"tg://user?id={winner.value.UserId}\">{winner.value.UserFirstName}</a> - {winner.value.WinsCount} raz/y");
+                            sb.AppendLine($"{winner.index+1}. <a href=\"tg://user?id={winner.value.UserId}\">{winner.value.UserFirstName}</a> - {winner.value.Points} punkty/ów");
                         else
-                            sb.AppendLine($"{winner.index+1}. @{winner.value.Username} - {winner.value.WinsCount} raz/y");
+                            sb.AppendLine($"{winner.index+1}. @{winner.value.Username} - {winner.value.Points} punkty/ów");
                     }
                 }
-
             }
             return sb.ToString();
         }
@@ -179,39 +186,37 @@ namespace Telegram.Bot.CovidPoll.Services
             var sb = new StringBuilder("<strong>Ankiety zostały zamknięte</strong>"); sb.AppendLine();
             sb.AppendLine("Przewidywania zarażeń na kolejny dzień (ilość przypadków, około):"); sb.AppendLine();
 
-            if (pollChat == null || pollChat.PollAnswers.Count == 0)
+            if (pollChat == null || (pollChat.PollAnswers.Count == 0 && pollChat.NonPollAnswers.Count == 0))
             {
                 sb.AppendLine("Brak oddanych głosów na tej grupie.");
             }
             else
             {
-                for (var i = 0; i < pollOptionsText.Count; i++)
+                var answers = pollVotesConverterHelper.ConvertPollVotes(poll, pollChat).AsEnumerable().OrderByDescending(a => a.VoteNumber).ToList();
+                var votes = pollVotesConverterHelper.GetAllPossibilities(poll, pollChat);
+                foreach (var vote in votes)
                 {
-                    var pollAnswers = pollChat.PollAnswers.Where(pollAnswer => pollAnswer.VoteId == i).ToList();
-                    if (pollAnswers.Count > 0)
+                    sb.AppendLine($"<strong>{(vote.FromPoll ? pollOptionsText[poll.Options.IndexOf(vote.VoteNumber)] : vote.VoteNumber)}</strong>");
+                    foreach (var answer in answers.Where(a => a.VoteNumber == vote.VoteNumber && a.FromPoll == vote.FromPoll).ToList())
                     {
-                        sb.AppendLine($"<strong>{pollOptionsText[i]}</strong>");
-                        foreach (var pollAnswer in pollAnswers)
-                        {
-                            if (pollAnswer.Username == null)
-                                sb.Append($"<a href=\"tg://user?id={pollAnswer.UserId}\">{pollAnswer.UserFirstName}</a> ");
-                            else
-                                sb.Append($"@{pollAnswer.Username} ");
-                        }
-                        sb.AppendLine(); sb.AppendLine();
+                        if (answer.Username == null)
+                            sb.Append($"<a href=\"tg://user?id={answer.UserId}\">{answer.UserFirstName}</a> ");
+                        else
+                            sb.Append($"@{answer.Username} ");
                     }
+                    sb.AppendLine(); sb.AppendLine();
                 }
             }
             var predictionsCount = poll.ChatPolls.SelectMany(cp => cp.PollAnswers).Count();
+            predictionsCount += poll.ChatPolls.SelectMany(cp => cp.NonPollAnswers).Count();
             if (predictionsCount > 0)
             {
-                //var predictions = poll.ChatPolls.SelectMany(cp => cp.PollAnswers)
-                //.GroupBy(pa => pa.UserId, (pa, y) => y.First()).Sum(po => int.Parse(poll.Options[po.VoteId]));
-
                 var predictions = poll.ChatPolls.SelectMany(cp => cp.PollAnswers)
-                    .Sum(pa => int.Parse(poll.Options[pa.VoteId]));
+                    .Sum(pa => poll.Options[pa.VoteId]);
+                predictions += poll.ChatPolls.SelectMany(cp => cp.NonPollAnswers)
+                    .Sum(npa => npa.VoteNumber);
 
-                sb.AppendLine($"Przewiduje się według wszystkich ankiet około {predictions / predictionsCount} przypadków.");
+                sb.AppendLine($"Przewiduje się według wszystkich ankiet około {(predictions / predictionsCount):### ###} przypadków.");
             }
 
             return sb.ToString();

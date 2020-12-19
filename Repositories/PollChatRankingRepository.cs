@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using System.Linq;
 using System;
+using Telegram.Bot.CovidPoll.Services.Models;
 
 namespace Telegram.Bot.CovidPoll.Repositories
 {
@@ -18,7 +19,7 @@ namespace Telegram.Bot.CovidPoll.Repositories
         {
             return mongoDb.ChatsRankings.InsertOneAsync(chatRanking);
         }
-        public async Task AddWinsCountAsync(IList<PollAnswer> winners, long chatId)
+        public async Task AddWinsCountAsync(IList<PredictionsModel> winners, long chatId)
         {
             var ranking = await this.GetChatRankingAsync(chatId);
             if (ranking == null)
@@ -26,24 +27,33 @@ namespace Telegram.Bot.CovidPoll.Repositories
                 ranking = new ChatRanking() { ChatId = chatId };
                 await this.AddChatToRankingAsync(ranking);
             }
-            
-
             foreach (var winner in winners)
             {
                 var user = ranking?.Winners.FirstOrDefault(w => w.UserId == winner.UserId);
-                var chatWinner = new ChatWinner();
-                chatWinner.UserId = winner.UserId;
-                chatWinner.Username = winner.Username;
-                chatWinner.UserFirstName = winner.UserFirstName;
-
+                var chatWinner = new ChatWinner
+                {
+                    UserId = winner.UserId,
+                    Username = winner.Username,
+                    UserFirstName = winner.UserFirstName
+                };
                 if (user != null)
                 {
-                    chatWinner.WinsCount = user.WinsCount + 1;
+                    if (winner.Points != 0)
+                    {
+                        chatWinner.WinsCount = user.WinsCount + 1;
+                        chatWinner.Points = user.Points + winner.Points;
+                    }
+                    chatWinner.TotalVotes = user.TotalVotes + 1;
                     ranking.Winners[ranking.Winners.FindIndex(w => w.UserId == winner.UserId)] = chatWinner;
                 }
                 else
                 {
-                    chatWinner.WinsCount = 1;
+                    if (winner.Points != 0)
+                    {
+                        chatWinner.WinsCount = 1;
+                        chatWinner.Points = winner.Points;
+                    }
+                    chatWinner.TotalVotes = 1;
                     ranking.Winners.Add(chatWinner);
                 }
             }

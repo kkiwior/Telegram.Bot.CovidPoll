@@ -9,7 +9,7 @@ namespace Telegram.Bot.CovidPoll.Db
     {
         [BsonId]
         public ObjectId Id { get; set; }
-        public List<string> Options { get; set; } = new List<string>();
+        public List<int> Options { get; set; } = new List<int>();
         public List<PollChat> ChatPolls { get; set; } = new List<PollChat>();
         public bool ChatPollsSended { get; set; } = false;
         public bool ChatPollsClosed { get; set; } = false;

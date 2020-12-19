@@ -18,7 +18,9 @@ namespace Telegram.Bot.CovidPoll.Helpers
             setCovid,
             test,
             ranking,
-            poll
+            poll,
+            vote,
+            unvote
         };
 
         public async Task<BotCommandModel> CheckCommandIsCorrectAsync(BotCommands commandType, string command)

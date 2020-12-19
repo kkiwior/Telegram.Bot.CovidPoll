@@ -8,6 +8,7 @@ using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using static Telegram.Bot.CovidPoll.Helpers.BotCommandHelper;
 
 namespace Telegram.Bot.CovidPoll.Handlers
 {
@@ -29,7 +30,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
             { 
                 new BotCommand 
                 { 
-                    Command = "ranking", 
+                    Command = BotCommands.ranking.ToString(), 
                     Description = "Wyświetla ranking osób najlepiej przewidujących."
                 } 
             };
@@ -49,15 +50,15 @@ namespace Telegram.Bot.CovidPoll.Handlers
                     return;
 
                 await pollChatRankingRepository.UpdateLastCommandDateAsync(e.Message.Chat.Id, DateTime.UtcNow);
-                var sb = new StringBuilder("<b>Ogólny ranking (przewidzieli poprawnie):</b>"); sb.AppendLine();
+                var sb = new StringBuilder("<b>Ogólny ranking:</b>"); sb.AppendLine();
                 if (ranking.Winners.Count == 0)
                 {
                     sb.AppendLine(); sb.AppendLine("Brak osób, które poprawnie przewidziały.");
                 }
 
-                foreach (var winner in ranking.Winners.OrderByDescending(w => w.WinsCount).Select((value, index) => new { value, index }))
+                foreach (var winner in ranking.Winners.OrderByDescending(w => w.Points).Select((value, index) => new { value, index }))
                 {
-                    sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName} - {winner.value.WinsCount} raz/y");
+                    sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName} - {winner.value.Points} punkty/ów");
                 }
                 sb.AppendLine(); sb.AppendLine("Komendę można wywołać co 4 sekundy.");
                 try

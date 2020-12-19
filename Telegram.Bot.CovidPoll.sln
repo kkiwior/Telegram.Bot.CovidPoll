@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30709.132
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Telegram.Bot.CovidPoll", "Telegram.Bot.CovidPoll.csproj", "{B607D515-7FFA-4B93-9A57-7F40DF44EA94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Telegram.Bot.CovidPoll", "Telegram.Bot.CovidPoll.csproj", "{B607D515-7FFA-4B93-9A57-7F40DF44EA94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

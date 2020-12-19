@@ -34,7 +34,7 @@ namespace Telegram.Bot.CovidPoll.Services
                     return pollOptionsInDb;
 
                 var covidToday = (double) cases.Cases;
-                var pollOptions = new List<string>();
+                var pollOptions = new List<int>();
                 for (var i = 0; i < 10; i++)
                 {
                     var covidOption = 0d;
@@ -56,10 +56,10 @@ namespace Telegram.Bot.CovidPoll.Services
                     }
                     covidOption = covidOption < 0 ? 0 : covidOption;
 
-                    pollOptions.Add(covidOption.ToString());
+                    pollOptions.Add((int) covidOption);
                 }
 
-                pollOptions = pollOptions.OrderBy(po => int.Parse(po)).ToList();
+                pollOptions = pollOptions.OrderBy(po => po).ToList();
                 var poll = new Poll()
                 {
                     Options = pollOptions,

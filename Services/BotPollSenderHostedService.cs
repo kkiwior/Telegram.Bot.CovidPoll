@@ -8,7 +8,7 @@ using Serilog;
 using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
-using Telegram.Bot.Types;
+using Telegram.Bot.CovidPoll.Helpers.Models;
 
 namespace Telegram.Bot.CovidPoll.Services
 {
@@ -24,6 +24,7 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly BotPollResultSenderService botPollResultSender;
         private readonly IPollConverterHelper pollConverterHelper;
         private readonly QueueService queueService;
+        private readonly BotMessageHelper botMessageHelper;
 
         public BotPollSenderHostedService(BotClientService botClientService,
                                           IOptions<BotSettings> botSettings,
@@ -34,7 +35,8 @@ namespace Telegram.Bot.CovidPoll.Services
                                           IPollChatRepository pollChatRepository,
                                           BotPollResultSenderService botPollResultSender,
                                           IPollConverterHelper pollConverterHelper,
-                                          QueueService queueService)
+                                          QueueService queueService,
+                                          BotMessageHelper botMessageHelper)
         {
             this.botClientService = botClientService;
             this.botSettings = botSettings;
@@ -46,6 +48,7 @@ namespace Telegram.Bot.CovidPoll.Services
             this.botPollResultSender = botPollResultSender;
             this.pollConverterHelper = pollConverterHelper;
             this.queueService = queueService;
+            this.botMessageHelper = botMessageHelper;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -56,12 +59,6 @@ namespace Telegram.Bot.CovidPoll.Services
         {
             var pollsStart = DateTime.UtcNow.Date.AddHours(botSettings.Value.PollsStartHourUtc);
             var pollsEnd = DateTime.UtcNow.Date.AddHours(botSettings.Value.PollsEndHourUtc);
-            //var pollCheck = await pollRepository.FindLatestAsync();
-            //if (pollCheck?.Date.AddDays(1))
-            //{
-            //    await StopPolls(stoppingToken);
-            //    botPollResultSender.SendPredictionsToChats();
-            //}
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -115,7 +112,7 @@ namespace Telegram.Bot.CovidPoll.Services
             else if (!poll.ChatPollsSended)
             {
                 await pollRepository.SetSendedAsync(poll.Id, true);
-                poll.Options = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options);
+                var convertedPollOptions = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options);
 
                 queueService.QueueBackgroundWorkItem(async stoppingToken =>
                 {
@@ -123,12 +120,13 @@ namespace Telegram.Bot.CovidPoll.Services
                     {
                         try
                         {
-                            var sendedPoll = await SendPoll(stoppingToken, chat.ChatId, poll.Options);
+                            var sendedPoll = await SendPoll(chat.ChatId, convertedPollOptions, stoppingToken);
                             await pollChatRepository.AddAsync(poll.Id, new Db.PollChat()
                             {
-                                ChatId = sendedPoll.Chat.Id,
-                                PollId = sendedPoll.Poll.Id,
-                                MessageId = sendedPoll.MessageId
+                                ChatId = sendedPoll.PollMessage.Chat.Id,
+                                PollId = sendedPoll.PollMessage.Poll.Id,
+                                MessageId = sendedPoll.PollMessage.MessageId,
+                                NonPollMessageId = sendedPoll.NonPollMessage.MessageId
                             });
                         }
                         catch (Exception) { }
@@ -167,7 +165,7 @@ namespace Telegram.Bot.CovidPoll.Services
                     {
                         try
                         {
-                            await StopPoll(stoppingToken, chatPoll.ChatId, chatPoll.MessageId);
+                            await StopPoll(chatPoll.ChatId, chatPoll.MessageId, stoppingToken);
                         }
                         catch (Exception) { }
 
@@ -178,20 +176,14 @@ namespace Telegram.Bot.CovidPoll.Services
             Log.Information($"[{nameof(BotPollSenderHostedService)}] - All polls have been closed.");
         }
 
-        private Task StopPoll(CancellationToken stoppingToken, long chatId, int messageId)
+        private Task StopPoll(long chatId, int messageId, CancellationToken stoppingToken)
         {
             return botClientService.BotClient.StopPollAsync(chatId, messageId, cancellationToken: stoppingToken);
         }
 
-        private Task<Message> SendPoll(CancellationToken stoppingToken, long chatId, IList<string> pollOptions)
+        private Task<SendPollModel> SendPoll(long chatId, IList<string> pollOptions, CancellationToken stoppingToken)
         {
-            return botClientService.BotClient.SendPollAsync(
-                chatId: chatId,
-                question: "Ile przewidujesz zakażeń na jutro?",
-                options: pollOptions,
-                isAnonymous: false,
-                cancellationToken: stoppingToken
-            );
+            return botMessageHelper.SendPollAsync(chatId, pollOptions, stoppingToken);
         }
     }
 }

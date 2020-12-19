@@ -45,6 +45,21 @@ namespace Telegram.Bot.CovidPoll.Repositories
         {
             return mongoDb.Polls.Find(_ => true).SortByDescending(p => p.Date).FirstOrDefaultAsync();
         }
+        public Task<Poll> FindLatestWithoutChatsAsync()
+        {
+            return mongoDb.Polls.Find(_ => true).SortByDescending(p => p.Date).Project(p =>
+                new Poll
+                {
+                    Id = p.Id,
+                    ChatPollsClosed = p.ChatPollsClosed,
+                    ChatPollsSended = p.ChatPollsSended,
+                    ChatPredictionsResultSended = p.ChatPredictionsResultSended,
+                    ChatPredictionsSended = p.ChatPredictionsSended,
+                    Date = p.Date,
+                    Options = p.Options
+                }
+            ).FirstOrDefaultAsync();
+        }
         public Task<Poll> FindByDateAsync(DateTime date)
         {
             return mongoDb.Polls.Find(p => p.Date == date.Date).FirstOrDefaultAsync();

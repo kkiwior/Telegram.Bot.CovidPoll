@@ -20,7 +20,6 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IHttpClientFactory httpClient;
         private readonly IHostApplicationLifetime applicationLifetime;
         private readonly BotPollResultSenderService botPollResultSender;
-        private static bool firstExecute = false;
         public CovidTrackingHostedService(IOptions<CovidTrackingSettings> covidTrackingSettings,
                                           ICovidRepository covidRepository,
                                           IHttpClientFactory httpClient,

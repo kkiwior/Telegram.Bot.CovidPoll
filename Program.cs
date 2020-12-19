@@ -45,12 +45,16 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<IPollChatRankingRepository, PollChatRankingRepository>();
                      services.AddSingleton<IChatMessageRepository, ChatMessageRepository>();
                      services.AddSingleton<IPollConverterHelper, PollConverterHelper>();
+                     services.AddSingleton<IChatUserCommandRepository, ChatUserCommandRepository>();
+                     services.AddSingleton<BotMessageHelper>();
+                     services.AddSingleton<PollVotesConverterHelper>();
                      //services.AddSingleton<IBotEvent, BotStatusHandler>();
                      services.AddSingleton<IBotEvent, BotVoteHandler>();
                      services.AddSingleton<IBotEvent, BotJoinLeaveHandler>();
                      services.AddSingleton<IBotEvent, BotAdminHandler>();
                      services.AddSingleton<IBotEvent, BotRankingHandler>();
                      services.AddSingleton<IBotEvent, BotReplyPollHandler>();
+                     services.AddSingleton<IBotEvent, BotNonPollHandler>();
                      services.AddSingleton<QueueService>();
                      services.AddSingleton<PollOptionsService>();
                      services.AddSingleton<BotPollResultSenderService>();

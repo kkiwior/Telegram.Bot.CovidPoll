@@ -6,6 +6,7 @@ using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using static Telegram.Bot.CovidPoll.Helpers.BotCommandHelper;
 
 namespace Telegram.Bot.CovidPoll.Handlers
 {
@@ -31,7 +32,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
             {
                 new BotCommand
                 {
-                    Command = "poll",
+                    Command = BotCommands.poll.ToString(),
                     Description = "Wyświetla aktualną ankietę, jeżeli istnieje."
                 }
             };
