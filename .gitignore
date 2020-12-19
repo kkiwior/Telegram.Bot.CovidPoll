@@ -486,3 +486,4 @@ MigrationBackup/
 
 docker-compose.yml
 appsettings.Production.json
+appsettings.Development.json
