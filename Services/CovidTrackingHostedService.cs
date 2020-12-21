@@ -50,7 +50,8 @@ namespace Telegram.Bot.CovidPoll.Services
                         {
                             fetchDate = DateTime.UtcNow.Date.AddDays(1)
                                 .AddHours(covidTrackingSettings.Value.FetchDataHourUtc);
-                            Log.Information($"[{nameof(CovidTrackingHostedService)}]: Data successfully downloaded or is up to date");
+                            Log.Information(
+                                $"[{nameof(CovidTrackingHostedService)}]: Data successfully downloaded or is up to date");
                         }
                         else
                         {
@@ -81,14 +82,16 @@ namespace Telegram.Bot.CovidPoll.Services
 
                 var datePattern =
                     "<div id=\"global-stats\">\\n<div class=\"global-stats\">\\n<p>Dane pochodzą z Ministerstwa Zdrowia,\\s*aktualne\\s*na\\s*:\\s*(\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2})\\s*<a";
-                var casesPattern = "<pre id=\"registerData\" class=\"hide\">{\"description\":\".*\",\"data\":\".*Cały kraj;([0-9]*).*<\\/pre>";
+                var casesPattern = 
+                    "<pre id=\"registerData\" class=\"hide\">{\"description\":\".*\",\"data\":\".*Cały kraj;([0-9]*).*<\\/pre>";
                 var dateRegex = new Regex(datePattern, RegexOptions.IgnoreCase).Match(htmlContent);
                 var casesRegex = new Regex(casesPattern, RegexOptions.IgnoreCase).Match(htmlContent);
 
                 if (!dateRegex.Success || dateRegex.Groups.Count < 2)
                     throw new CovidParseException($"dataRegex failed");
 
-                if (DateTime.TryParse(dateRegex.Groups[1].Value, CultureInfo.GetCultureInfo("pl-PL"), DateTimeStyles.None, out var updateDate))
+                if (DateTime.TryParse(dateRegex.Groups[1].Value, CultureInfo.GetCultureInfo("pl-PL"), 
+                    DateTimeStyles.None, out var updateDate))
                 {
                     if (latestCovid != null && latestCovid.Date >= updateDate.ToUniversalTime().Date)
                         return false;
@@ -113,7 +116,8 @@ namespace Telegram.Bot.CovidPoll.Services
                 }
                 else
                 {
-                    throw new CovidParseException($"Cases parse exception, regexContent = {casesRegex.Groups[1].Value.Replace(" ", "")}");
+                    throw new CovidParseException(
+                        $"Cases parse exception, regexContent = {casesRegex.Groups[1].Value.Replace(" ", "")}");
                 }
             }
             return false;

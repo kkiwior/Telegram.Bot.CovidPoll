@@ -71,10 +71,13 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         text: "<b>Informacje o bocie:</b>\n" +
                         "1. Bot ma za zadanie przewidywać ilość zakażeń w kolejnym dniu na podstawie ankiet.\n" +
                         $"2. Ankiety pojawiają się o godzinie: {botOptions.Value.PollsStartHourUtc} UTC\n" +
-                        $"3. Ankiety są zamykane oraz wyświetlają się przewidywania zakażeń o godzinie: {botOptions.Value.PollsEndHourUtc} UTC\n" +
-                        $"4. Aktualne zakażenia oraz ranking osób najlepiej przewidujących pojawia się o godzinie: {covidTrackingOptions.Value.FetchDataHourUtc} UTC\n" +
+                        "3. Ankiety są zamykane oraz wyświetlają się przewidywania zakażeń o godzinie: " +
+                        $"{botOptions.Value.PollsEndHourUtc} UTC\n" +
+                        "4. Aktualne zakażenia oraz ranking osób najlepiej przewidujących pojawia się o godzinie: " +
+                        $"{covidTrackingOptions.Value.FetchDataHourUtc} UTC\n" +
                         "\n<b>Dostępne komendy:</b>\n" +
                         "1. /ranking - wyświetla aktualny ranking osób najlepiej przewidujących.\n" +
+                        "Każda osoba posiada współczynnik najlepszych trafień, wykorzystywany do obliczania przewidywanych zakażeń.\n" +
                         "2. /poll - wyświetla aktualną ankietę, jeżeli żadna ankieta nie jest dostępna, to nic nie wyświetli.\n" +
                         "3. /vote 35000 - pozwala zagłosować poza ankietą",
                         parseMode: Types.Enums.ParseMode.Html
@@ -82,7 +85,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                     var latestPoll = await pollRepository.FindLatestAsync();
                     if (latestPoll?.ChatPollsSended == true && latestPoll?.ChatPollsClosed == false)
                     {
-                        var pollChat = await pollChatRepository.FindLatestByChatIdAsync(e.Update.Message.Chat.Id);
+                        var pollChat = latestPoll.FindByChatId(e.Update.Message.Chat.Id);
                         if (pollChat != null)
                             return;
 
@@ -103,8 +106,8 @@ namespace Telegram.Bot.CovidPoll.Handlers
             {
                 try
                 {
-                    if (e.Update.Message?.LeftChatMember?.Id == botClientService.BotClient.BotId
-                        || await botClientService.BotClient.GetChatMembersCountAsync(e.Update.Message?.Chat.Id) == 1)
+                    if (e.Update.Message?.LeftChatMember?.Id == botClientService.BotClient.BotId || 
+                        await botClientService.BotClient.GetChatMembersCountAsync(e.Update.Message?.Chat.Id) == 1)
                     {
                         await chatRepository.DeleteByIdAsync(e.Update.Message.Chat.Id);
                     }

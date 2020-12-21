@@ -9,11 +9,15 @@ namespace Telegram.Bot.CovidPoll.Extensions
 {
     public static class Extensions
     {
-        public static async Task UnpinChatMessageByIdAsync(this ITelegramBotClient telegramBotClient, ChatId chatId, int messageId, CancellationToken cancellationToken = default)
+        public static async Task UnpinChatMessageByIdAsync(this ITelegramBotClient telegramBotClient,
+                                                           ChatId chatId,
+                                                           int messageId,
+                                                           CancellationToken cancellationToken = default)
         {
             await telegramBotClient.MakeRequestAsync(new UnpinChatMessageByIdRequest(chatId, messageId), cancellationToken);
         }
     }
+
     [JsonObject(MemberSerialization.OptIn, NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
     public class UnpinChatMessageByIdRequest : RequestBase<bool>
     {

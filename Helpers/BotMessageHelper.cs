@@ -22,7 +22,9 @@ namespace Telegram.Bot.CovidPoll.Helpers
             this.botClientService = botClientService;
         }
 
-        public async Task<SendPollModel> SendPollAsync(ChatId chatId, IEnumerable<string> options, CancellationToken cancellationToken = default)
+        public async Task<SendPollModel> SendPollAsync(ChatId chatId,
+                                                       IEnumerable<string> options,
+                                                       CancellationToken cancellationToken = default)
         {
             var poll = await botClientService.BotClient.SendPollAsync(
                 chatId: chatId,

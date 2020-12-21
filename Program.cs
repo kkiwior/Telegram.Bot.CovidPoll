@@ -46,6 +46,7 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<IChatMessageRepository, ChatMessageRepository>();
                      services.AddSingleton<IPollConverterHelper, PollConverterHelper>();
                      services.AddSingleton<IChatUserCommandRepository, ChatUserCommandRepository>();
+                     services.AddSingleton<IUserRatioRepository, UserRatioRepository>();
                      services.AddSingleton<BotMessageHelper>();
                      services.AddSingleton<PollVotesConverterHelper>();
                      //services.AddSingleton<IBotEvent, BotStatusHandler>();

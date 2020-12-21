@@ -17,13 +17,16 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private readonly BotClientService botClientService;
         private readonly IBotCommandHelper botCommandHelper;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
+        private readonly IUserRatioRepository userRatioRepository;
         public BotRankingHandler(BotClientService botClientService,
                                  IBotCommandHelper botCommandHelper,
-                                 IPollChatRankingRepository pollChatRankingRepository)
+                                 IPollChatRankingRepository pollChatRankingRepository,
+                                 IUserRatioRepository userRatioRepository)
         {
             this.botClientService = botClientService;
             this.botCommandHelper = botCommandHelper;
             this.pollChatRankingRepository = pollChatRankingRepository;
+            this.userRatioRepository = userRatioRepository;
         }
         public IList<BotCommand> Command => 
             new List<BotCommand> 
@@ -42,7 +45,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)
         {
-            var n = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommandHelper.BotCommands.ranking, e.Message.Text);
+            var n = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommands.ranking, e.Message.Text);
             if (n.CommandCorrect && (e.Message.Chat.Type == ChatType.Supergroup || e.Message.Chat.Type == ChatType.Group))
             {
                 var ranking = await pollChatRankingRepository.GetChatRankingAsync(e.Message.Chat.Id);
@@ -52,15 +55,23 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 await pollChatRankingRepository.UpdateLastCommandDateAsync(e.Message.Chat.Id, DateTime.UtcNow);
                 var sb = new StringBuilder("<b>Ogólny ranking:</b>"); sb.AppendLine();
                 if (ranking.Winners.Count == 0)
-                {
-                    sb.AppendLine(); sb.AppendLine("Brak osób, które poprawnie przewidziały.");
-                }
+                    sb.AppendLine("\nBrak osób, które poprawnie przewidziały.");
 
+                var usersRatio = await userRatioRepository.GetAsync(e.Message.Chat.Id);
                 foreach (var winner in ranking.Winners.OrderByDescending(w => w.Points).Select((value, index) => new { value, index }))
                 {
-                    sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName} - {winner.value.Points} punkty/ów");
+                    var userRatio = usersRatio.FirstOrDefault(ur => ur.UserId == winner.value.UserId)?.Ratio;
+                    if (userRatio != null)
+                    {
+                        userRatio = Math.Round((double) userRatio, 2);
+                        sb.AppendLine(@$"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}
+                                      - {winner.value.Points} punkty/ów ({userRatio})");
+                    }
+                    else
+                        sb.AppendLine(@$"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}
+                                      - {winner.value.Points} punkty/ów");
                 }
-                sb.AppendLine(); sb.AppendLine("Komendę można wywołać co 4 sekundy.");
+                sb.AppendLine("\nKomendę można wywołać co 4 sekundy.");
                 try
                 {
                     await botClientService.BotClient.SendTextMessageAsync(

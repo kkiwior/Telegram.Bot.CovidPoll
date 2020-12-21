@@ -10,13 +10,12 @@ namespace Telegram.Bot.CovidPoll.Services
 {
     public class PollOptionsService
     {
-        private readonly ICovidRepository covidRepository;
         private readonly IPollRepository pollRepository;
         private readonly CovidCalculateService covidCalculateService;
 
-        public PollOptionsService(ICovidRepository covidRepository, IPollRepository pollRepository, CovidCalculateService covidCalculateService)
+        public PollOptionsService(IPollRepository pollRepository,
+                                  CovidCalculateService covidCalculateService)
         {
-            this.covidRepository = covidRepository;
             this.pollRepository = pollRepository;
             this.covidCalculateService = covidCalculateService;
         }
@@ -38,7 +37,11 @@ namespace Telegram.Bot.CovidPoll.Services
                 for (var i = 0; i < 10; i++)
                 {
                     var covidOption = 0d;
-                    if (covidToday / 10000 > 1)
+                    if (covidToday / 100000 > 1)
+                    {
+                        covidOption = i < 5 ? covidToday - 5000 * i : covidToday + 5000 * (i - 4);
+                    }
+                    else if (covidToday / 10000 > 1)
                     {
                         covidOption = i < 5 ? covidToday - 1000 * i : covidToday + 1000 * (i - 4);
                     }
@@ -52,7 +55,10 @@ namespace Telegram.Bot.CovidPoll.Services
                     }
                     else
                     {
-                        covidOption = i < 5 ? (covidToday - 1 * i >= 0 ? covidToday - 1 * i : covidToday + 1 * (i - 4)) : covidToday + 1 * (i - 4);
+                        if (covidToday < 4)
+                            covidOption = i;
+                        else
+                            covidOption = i < 5 ? (covidToday - 1 * i >= 0 ? covidToday - 1 * i : covidToday + 1 * (i - 4)) : covidToday + 1 * (i - 4);
                     }
                     covidOption = covidOption < 0 ? 0 : covidOption;
 

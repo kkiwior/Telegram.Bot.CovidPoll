@@ -107,7 +107,8 @@ namespace Telegram.Bot.CovidPoll.Services
                         await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
                 });*/
-                Log.Information($"[{nameof(BotPollSenderHostedService)}] - Polls haven't been sent. Not enough information about covid.");
+                Log.Information(
+                    $"[{nameof(BotPollSenderHostedService)}] - Polls haven't been sent. Not enough information about covid.");
             }
             else if (!poll.ChatPollsSended)
             {

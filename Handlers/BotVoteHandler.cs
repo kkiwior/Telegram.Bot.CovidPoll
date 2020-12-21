@@ -41,10 +41,10 @@ namespace Telegram.Bot.CovidPoll.Handlers
             if (e.Update.PollAnswer == null)
                 return;
 
-            var latestPoll = await pollRepository.FindLatestWithoutChatsAsync();
+            var latestPoll = await pollRepository.FindLatestAsync();
             if (latestPoll != null)
             {
-                var pollChat = await pollChatRepository.FindLatestByPollIdAsync(e.Update.PollAnswer.PollId);
+                var pollChat = latestPoll.FindByPollId(e.Update.PollAnswer.PollId);
                 if (pollChat == null)
                     return;
 
@@ -68,17 +68,22 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 }
                 if (e.Update.PollAnswer.OptionIds.Length > 0)
                 {
-                    var alreadyVoted = await pollChatRepository.CheckIfAlreadyVotedAsync(e.Update.PollAnswer.User.Id, latestPoll.Id, pollChat.PollId);
+                    var alreadyVoted = await pollChatRepository.CheckIfAlreadyVotedAsync(e.Update.PollAnswer.User.Id, 
+                                                                                         latestPoll.Id, pollChat.PollId);
                     if (!alreadyVoted)
                     {
-                        await pollChatRepository.AddVoteAsync(e.Update.PollAnswer.User.Id, e.Update.PollAnswer.User.Username, e.Update.PollAnswer.User.FirstName, latestPoll.Id,
-                            e.Update.PollAnswer.PollId, e.Update.PollAnswer.OptionIds[0]);
+                        await pollChatRepository.AddVoteAsync(e.Update.PollAnswer.User.Id, e.Update.PollAnswer.User.Username, 
+                                                              e.Update.PollAnswer.User.FirstName, latestPoll.Id,
+                                                              e.Update.PollAnswer.PollId, e.Update.PollAnswer.OptionIds[0]);
 
-                        var alreadyVotedInNonPoll = await pollChatRepository.CheckIfAlreadyVotedInNonPollAsync(e.Update.PollAnswer.User.Id, latestPoll.Id, pollChat.PollId);
+                        var alreadyVotedInNonPoll = await pollChatRepository
+                            .CheckIfAlreadyVotedInNonPollAsync(e.Update.PollAnswer.User.Id, latestPoll.Id, pollChat.PollId);
                         if (alreadyVotedInNonPoll)
                         {
-                            await pollChatRepository.RemoveNonPollVoteAsync(e.Update.PollAnswer.User.Id, latestPoll.Id, pollChat.PollId);
-                            pollChat.NonPollAnswers.Remove(pollChat.NonPollAnswers.FirstOrDefault(np => np.UserId == e.Update.PollAnswer.User.Id));
+                            await pollChatRepository.RemoveNonPollVoteAsync(e.Update.PollAnswer.User.Id, latestPoll.Id, 
+                                                                            pollChat.PollId);
+                            pollChat.NonPollAnswers.Remove(pollChat.NonPollAnswers
+                                .FirstOrDefault(np => np.UserId == e.Update.PollAnswer.User.Id));
 
                             await botMessageHelper.RemoveVoteFromNonPollAsync(pollChat, pollChat.ChatId);
                         }
@@ -87,7 +92,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 else
                 {
                     await pollChatRepository.RemoveVoteAsync(e.Update.PollAnswer.User.Id, latestPoll.Id,
-                        e.Update.PollAnswer.PollId);
+                                                             e.Update.PollAnswer.PollId);
                 }
             }
         }

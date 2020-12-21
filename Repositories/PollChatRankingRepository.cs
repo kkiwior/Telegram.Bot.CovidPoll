@@ -5,15 +5,22 @@ using Telegram.Bot.CovidPoll.Db;
 using System.Linq;
 using System;
 using Telegram.Bot.CovidPoll.Services.Models;
+using Telegram.Bot.CovidPoll.Helpers;
 
 namespace Telegram.Bot.CovidPoll.Repositories
 {
     public class PollChatRankingRepository : IPollChatRankingRepository
     {
         private readonly MongoDb mongoDb;
-        public PollChatRankingRepository(MongoDb mongoDb)
+        private readonly IUserRatioRepository userRatioRepository;
+        private readonly PollVotesConverterHelper pollVotesConverterHelper;
+        public PollChatRankingRepository(MongoDb mongoDb, 
+                                         IUserRatioRepository userRatioRepository,
+                                         PollVotesConverterHelper pollVotesConverterHelper)
         {
             this.mongoDb = mongoDb;
+            this.userRatioRepository = userRatioRepository;
+            this.pollVotesConverterHelper = pollVotesConverterHelper;
         }
         public Task AddChatToRankingAsync(ChatRanking chatRanking)
         {
@@ -30,11 +37,17 @@ namespace Telegram.Bot.CovidPoll.Repositories
             foreach (var winner in winners)
             {
                 var user = ranking?.Winners.FirstOrDefault(w => w.UserId == winner.UserId);
+                var ratio = await userRatioRepository.GetByUserIdAsync(winner.UserId, chatId);
                 var chatWinner = new ChatWinner
                 {
                     UserId = winner.UserId,
                     Username = winner.Username,
                     UserFirstName = winner.UserFirstName
+                };
+                var userRatio = new UserRatio()
+                {
+                    ChatId = chatId,
+                    UserId = winner.UserId
                 };
                 if (user != null)
                 {
@@ -56,6 +69,11 @@ namespace Telegram.Bot.CovidPoll.Repositories
                     chatWinner.TotalVotes = 1;
                     ranking.Winners.Add(chatWinner);
                 }
+                userRatio.Ratio = (double) chatWinner.Points / pollVotesConverterHelper.Points.Values.Max() / chatWinner.TotalVotes;
+                if (ratio == null)
+                    await userRatioRepository.AddAsync(userRatio);
+                else
+                    await userRatioRepository.UpdateAsync(userRatio.UserId, userRatio.Ratio);
             }
             if (ranking.Winners.Count > 0)
             {
@@ -68,7 +86,8 @@ namespace Telegram.Bot.CovidPoll.Repositories
         }
         public Task UpdateLastCommandDateAsync(long chatId, DateTime date)
         {
-            return mongoDb.ChatsRankings.UpdateOneAsync(cr => cr.ChatId == chatId, Builders<ChatRanking>.Update.Set(cr => cr.LastCommandDate, date));
+            return mongoDb.ChatsRankings.UpdateOneAsync(cr => cr.ChatId == chatId, 
+                Builders<ChatRanking>.Update.Set(cr => cr.LastCommandDate, date));
         }
     }
 }

@@ -57,11 +57,11 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
         private async void BotClient_OnCallbackQuery(object sender, CallbackQueryEventArgs e)
         {
-            var poll = await pollRepository.FindLatestWithoutChatsAsync();
+            var poll = await pollRepository.FindLatestAsync();
             if (poll == null || poll.ChatPollsClosed == true)
                 return;
 
-            var pollChat = await pollChatRepository.FindLatestByChatIdAsync(e.CallbackQuery.Message.Chat.Id);
+            var pollChat = poll.FindByChatId(e.CallbackQuery.Message.Chat.Id);
             var userLastCommand = await chatUserCommandRepository.FindAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.From.Id);
             if (userLastCommand == null)
                 await chatUserCommandRepository.AddAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.From.Id, DateTime.UtcNow);
@@ -69,7 +69,8 @@ namespace Telegram.Bot.CovidPoll.Handlers
             if (pollChat == null || userLastCommand?.LastCommandDate.AddSeconds(10) >= DateTime.UtcNow)
                 return;
 
-            await chatUserCommandRepository.UpdateLastCommandAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.From.Id, DateTime.UtcNow);
+            await chatUserCommandRepository.UpdateLastCommandAsync(e.CallbackQuery.Message.Chat.Id, 
+                                                                   e.CallbackQuery.From.Id, DateTime.UtcNow);
 
             var voted = await pollChatRepository.CheckIfAlreadyVotedInNonPollAsync(e.CallbackQuery.From.Id, poll.Id, pollChat.PollId);
             if (voted)
@@ -84,13 +85,15 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private async void BotClient_OnMessageVote(object sender, MessageEventArgs e)
         {
             var command = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommands.vote, e.Message.Text);
-            if (command.CommandCorrect && command.CommandArg != string.Empty && e.Message.Chat.Type is ChatType.Supergroup or ChatType.Group)
+            if (command.CommandCorrect && 
+                command.CommandArg != string.Empty && 
+                e.Message.Chat.Type is ChatType.Supergroup or ChatType.Group)
             {
-                var poll = await pollRepository.FindLatestWithoutChatsAsync();
+                var poll = await pollRepository.FindLatestAsync();
                 if (poll == null || poll.ChatPollsClosed == true)
                     return;
 
-                var pollChat = await pollChatRepository.FindLatestByChatIdAsync(e.Message.Chat.Id);
+                var pollChat = poll.FindByChatId(e.Message.Chat.Id);
                 var userLastCommand = await chatUserCommandRepository.FindAsync(e.Message.Chat.Id, e.Message.From.Id);
                 if (userLastCommand == null)
                     await chatUserCommandRepository.AddAsync(e.Message.Chat.Id, e.Message.From.Id, DateTime.UtcNow);
@@ -104,11 +107,12 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
                 await chatUserCommandRepository.UpdateLastCommandAsync(e.Message.Chat.Id, e.Message.From.Id, DateTime.UtcNow);
 
-                var pollChatVoted = await pollChatRepository.CheckIfAlreadyVotedInPollOrNonPollAsync(e.Message.From.Id, poll.Id, pollChat.PollId);
+                var pollChatVoted = await pollChatRepository.CheckIfAlreadyVotedInPollOrNonPollAsync(e.Message.From.Id, 
+                                                                                                     poll.Id, pollChat.PollId);
                 if (pollChatVoted == true)
                     return;
 
-                if (int.TryParse(command.CommandArg, out var voteNumber))
+                if (int.TryParse(command.CommandArg, out var voteNumber) && voteNumber >= 0)
                 {
                     pollChat.NonPollAnswers.Add(new Db.NonPollAnswer
                     {
@@ -139,7 +143,8 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         );
                     }
                     catch (Exception) {}
-                    await pollChatRepository.AddNonPollVoteAsync(e.Message.From.Id, e.Message.From.Username, e.Message.From.FirstName, poll.Id, pollChat.PollId, voteNumber);
+                    await pollChatRepository.AddNonPollVoteAsync(e.Message.From.Id, e.Message.From.Username, e.Message.From.FirstName, 
+                                                                 poll.Id, pollChat.PollId, voteNumber);
                 }
             }
         }

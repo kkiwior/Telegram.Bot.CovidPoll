@@ -44,7 +44,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)
         {
-            var n = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommandHelper.BotCommands.poll, e.Message.Text);
+            var n = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommands.poll, e.Message.Text);
             if (n.CommandCorrect && (e.Message.Chat.Type == ChatType.Supergroup || e.Message.Chat.Type == ChatType.Group))
             {
                 var pollChat = await pollChatRepository.FindLatestByChatIdAsync(e.Message.Chat.Id);

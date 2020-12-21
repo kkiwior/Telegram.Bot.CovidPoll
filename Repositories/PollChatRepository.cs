@@ -47,7 +47,8 @@ namespace Telegram.Bot.CovidPoll.Repositories
 
             return poll | nonPoll;
         }
-        public Task AddVoteAsync(long userId, string username, string userFirstName, ObjectId pollId, string pollTelegramId, int vote)
+        public Task AddVoteAsync(long userId, string username, string userFirstName, 
+                                 ObjectId pollId, string pollTelegramId, int vote)
         {
             var pollAnswers = new Db.PollAnswer()
             {
@@ -70,18 +71,14 @@ namespace Telegram.Bot.CovidPoll.Repositories
             var poll = await pollRepository.FindLatestAsync();
             return poll.ChatPolls.Where(cp => cp.ChatId == chatId).FirstOrDefault();
         }
-        public async Task<PollChat> FindLatestByPollIdAsync(string pollId)
-        {
-            var poll = await pollRepository.FindLatestAsync();
-            return poll.ChatPolls.Where(cp => cp.PollId.Equals(pollId)).FirstOrDefault();
-        }
         public async Task UpdateLastCommandDateAsync(long chatId, DateTime date)
         {
             var poll = await pollRepository.FindLatestWithoutChatsAsync();
             await mongoDb.Polls.UpdateOneAsync(p => p.Id == poll.Id && p.ChatPolls.Any(cp => cp.ChatId == chatId), 
                 Builders<Poll>.Update.Set(p => p.ChatPolls[-1].LastCommandDate, date));
         }
-        public Task AddNonPollVoteAsync(long userId, string username, string userFirstName, ObjectId pollId, string pollTelegramId, int voteNumber)
+        public Task AddNonPollVoteAsync(long userId, string username, string userFirstName, 
+                                        ObjectId pollId, string pollTelegramId, int voteNumber)
         {
             var nonPollAnswers = new Db.NonPollAnswer()
             {

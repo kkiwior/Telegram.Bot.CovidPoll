@@ -10,6 +10,5 @@ namespace Telegram.Bot.CovidPoll.Repositories
         Task DeleteByIdAsync(long id);
         Task<bool> CheckExistsByIdAsync(long id);
         Task<List<Chat>> GetAll();
-
     }
 }

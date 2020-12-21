@@ -7,6 +7,7 @@ using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.Types;
+using static Telegram.Bot.CovidPoll.Helpers.BotCommandHelper;
 
 namespace Telegram.Bot.CovidPoll.Handlers
 {
@@ -49,31 +50,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)
         {
-            //var n = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommandHelper.BotCommands.test, e.Message.Text);
-            //if (n.CommandCorrect)
-            //{
-            //    if (e.Message.From.Id == botOptions.Value.AdminUserId)
-            //    {
-            //        var poll = await pollRepository.FindLatestAsync();
-            //        var chats = await chatRepository.GetAll();
-            //        foreach (var chat in chats)
-            //        {
-            //            var pollChat = poll.ChatPolls.FirstOrDefault(cp => cp.ChatId == chat.ChatId);
-            //            if (pollChat == null)
-            //                continue;
-
-            //            var listOfChoices = pollChat.PollAnswers.ConvertAll(pa => poll.Options[pa.VoteId]).ToList();
-            //            var bestPrediction = listOfChoices.Aggregate((x, y) => Math.Abs(int.Parse(x) - 8000) < Math.Abs(int.Parse(y) - 8000) ? x : y);
-            //            var indexBestPrediction = poll.Options.IndexOf(bestPrediction);
-            //            var pollAnswers = pollChat.PollAnswers.Where(pollAnswer => pollAnswer.VoteId == indexBestPrediction).ToList();
-            //            var chatRanking = new List<ChatWinner>();
-
-            //            await pollChatRankingRepository.AddWinsCountAsync(pollAnswers, pollChat.ChatId);
-            //        }
-            //    }
-            //}
-            var command = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommandHelper.BotCommands.setCovid,
-                e.Message.Text);
+            var command = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommands.setCovid, e.Message.Text);
             if (command.CommandCorrect)
             {
                 if (e.Message.From.Id == botOptions.Value.AdminUserId)
