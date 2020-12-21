@@ -1,4 +1,4 @@
-﻿namespace Telegram.Bot.CovidPoll.Helpers
+﻿namespace Telegram.Bot.CovidPoll.Helpers.Models
 {
     public class BotCommandModel
     {

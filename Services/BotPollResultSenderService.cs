@@ -156,8 +156,8 @@ namespace Telegram.Bot.CovidPoll.Services
                 foreach (var answer in answers.Where(p => p.Points != 0).OrderByDescending(p => p.Points))
                 {
                     var voteAndPoints = 
-                        @$"{(answer.FromPoll ? pollOptionsText[poll.Options.IndexOf(answer.VoteNumber)] : answer.VoteNumber):### ###}
-                           (+{answer.Points})";
+                        $"{(answer.FromPoll ? pollOptionsText[poll.Options.IndexOf(answer.VoteNumber)] : answer.VoteNumber):### ###}" +
+                        $" (+{answer.Points})";
                     if (answer.Username == null)
                         sb.AppendLine(
                             $"<a href=\"tg://user?id={answer.UserId}\">{answer.UserFirstName}</a> - zaznaczył {voteAndPoints}");
@@ -217,8 +217,8 @@ namespace Telegram.Bot.CovidPoll.Services
                 foreach (var vote in votes)
                 {
                     sb.AppendLine(
-                        @$"<strong>{(vote.FromPoll ? pollOptionsText[poll.Options.IndexOf(vote.VoteNumber)] : vote.VoteNumber):### ###}
-                           </strong>");
+                        $"<strong>{(vote.FromPoll ? pollOptionsText[poll.Options.IndexOf(vote.VoteNumber)] : vote.VoteNumber):### ###}" +
+                         "</strong>");
                     foreach (var answer in answers.Where(a => a.VoteNumber == vote.VoteNumber && a.FromPoll == vote.FromPoll).ToList())
                     {
                         if (answer.Username == null)

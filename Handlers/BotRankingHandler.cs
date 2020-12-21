@@ -64,12 +64,12 @@ namespace Telegram.Bot.CovidPoll.Handlers
                     if (userRatio != null)
                     {
                         userRatio = Math.Round((double) userRatio, 2);
-                        sb.AppendLine(@$"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}
-                                      - {winner.value.Points} punkty/ów ({userRatio})");
+                        sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}" +
+                                      $" - {winner.value.Points} punkty/ów ({userRatio})");
                     }
                     else
-                        sb.AppendLine(@$"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}
-                                      - {winner.value.Points} punkty/ów");
+                        sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}" +
+                                      $" - {winner.value.Points} punkty/ów");
                 }
                 sb.AppendLine("\nKomendę można wywołać co 4 sekundy.");
                 try
