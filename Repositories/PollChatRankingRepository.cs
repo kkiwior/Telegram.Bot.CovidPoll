@@ -78,7 +78,7 @@ namespace Telegram.Bot.CovidPoll.Repositories
                 if (ratio == null)
                     await userRatioRepository.AddAsync(userRatio);
                 else
-                    await userRatioRepository.UpdateAsync(userRatio.UserId, userRatio.Ratio);
+                    await userRatioRepository.UpdateAsync(userRatio.UserId, userRatio.ChatId, userRatio.Ratio);
             }
             if (ranking.Winners.Count > 0)
             {
