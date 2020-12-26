@@ -121,8 +121,8 @@ namespace Telegram.Bot.CovidPoll.Helpers
                         casesRatio.Add(new PredictCovidCasesModel
                         {
                             VoteWithoutRatio = poll.Options[userVote.VoteId],
-                            Vote = poll.Options[userVote.VoteId] * 0.9,
-                            Ratio = 0.9
+                            Vote = poll.Options[userVote.VoteId],
+                            Ratio = 0
                         });
                     }
                 }
@@ -143,8 +143,8 @@ namespace Telegram.Bot.CovidPoll.Helpers
                         casesRatio.Add(new PredictCovidCasesModel
                         {
                             VoteWithoutRatio = userVote.VoteNumber,
-                            Vote = userVote.VoteNumber * 0.9,
-                            Ratio = 0.9
+                            Vote = userVote.VoteNumber,
+                            Ratio = 0
                         });
                     }
                 }
@@ -173,6 +173,9 @@ namespace Telegram.Bot.CovidPoll.Helpers
             {
                 multiplier = 2;
             }
+            if (Math.Abs(covidToday - voteNumber) > Points.Keys.Max())
+                return 0;
+
             return Points.FirstOrDefault(p => p.Key * multiplier >= Math.Abs(covidToday - voteNumber)).Value;
         }
     }

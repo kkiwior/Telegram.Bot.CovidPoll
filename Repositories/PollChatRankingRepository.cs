@@ -56,6 +56,11 @@ namespace Telegram.Bot.CovidPoll.Repositories
                         chatWinner.WinsCount = user.WinsCount + 1;
                         chatWinner.Points = user.Points + winner.Points;
                     }
+                    else
+                    {
+                        chatWinner.WinsCount = user.WinsCount;
+                        chatWinner.Points = user.Points;
+                    }
                     chatWinner.TotalVotes = user.TotalVotes + 1;
                     ranking.Winners[ranking.Winners.FindIndex(w => w.UserId == winner.UserId)] = chatWinner;
                 }

@@ -142,7 +142,7 @@ namespace Telegram.Bot.CovidPoll.Services
         {
             var pollOptionsText = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options, true);
             var sb = new StringBuilder($"<strong>Aktualna liczba przypadków:</strong> {covidToday:### ###}\n\n");
-            if (pollChat == null || pollChat.PollAnswers.Count == 0)
+            if (pollChat == null || (pollChat.PollAnswers.Count == 0 && pollChat.NonPollAnswers.Count == 0))
             {
                 sb.AppendLine("Nikt nie próbował przewidywać na tej grupie.");
             }
@@ -153,7 +153,8 @@ namespace Telegram.Bot.CovidPoll.Services
 
                 sb.AppendLine(@"Najlepiej przewidzieli:");
                 var answers = pollVotesConverterHelper.ConvertPollVotes(poll, pollChat, covidToday).ToList();
-                foreach (var answer in answers.Where(p => p.Points != 0).OrderByDescending(p => p.Points))
+                foreach (var answer in answers
+                    .Where(p => p.Points != 0).OrderByDescending(p => p.Points).ThenByDescending(p => p.VoteNumber))
                 {
                     var voteAndPoints = 
                         $"{(answer.FromPoll ? pollOptionsText[poll.Options.IndexOf(answer.VoteNumber)] : answer.VoteNumber):### ###}" +
@@ -185,7 +186,7 @@ namespace Telegram.Bot.CovidPoll.Services
                     {
                         var userRatio = usersRatio.FirstOrDefault(ur => ur.UserId == winner.value.UserId)?.Ratio;
                         if (userRatio != null)
-                            userRatio = Math.Round((double) userRatio, 2);
+                            userRatio = Math.Round((double) userRatio, 3);
 
                         if (winner.value.Username == null)
                             sb.AppendLine(

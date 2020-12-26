@@ -16,9 +16,9 @@ namespace Telegram.Bot.CovidPoll.Repositories
         {
             return mongoDb.UsersRatio.InsertOneAsync(userRatio);
         }
-        public Task UpdateAsync(long userId, double ratio)
+        public Task UpdateAsync(long userId, long chatId, double ratio)
         {
-            return mongoDb.UsersRatio.UpdateOneAsync(ur => ur.UserId == userId, 
+            return mongoDb.UsersRatio.UpdateOneAsync(ur => ur.UserId == userId && ur.ChatId == chatId, 
                 Builders<UserRatio>.Update.Set(ur => ur.Ratio, ratio));
         }
         public Task<List<UserRatio>> GetAsync(long chatId)

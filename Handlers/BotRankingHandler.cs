@@ -63,7 +63,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                     var userRatio = usersRatio.FirstOrDefault(ur => ur.UserId == winner.value.UserId)?.Ratio;
                     if (userRatio != null)
                     {
-                        userRatio = Math.Round((double) userRatio, 2);
+                        userRatio = Math.Round((double) userRatio, 3);
                         sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}" +
                                       $" - {winner.value.Points} punkty/ów ({userRatio})");
                     }
