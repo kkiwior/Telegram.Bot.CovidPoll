@@ -6,6 +6,7 @@ using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 using static Telegram.Bot.CovidPoll.Helpers.BotCommandHelper;
 
@@ -16,7 +17,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private readonly BotClientService botClientService;
         private readonly IBotCommandHelper botCommandHelper;
         private readonly ICovidRepository covidRepository;
-        private readonly BotPollResultSenderService botPollResultSender;
+        private readonly IBotPollResultSenderService botPollResultSender;
         private readonly IOptions<BotSettings> botOptions;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IPollRepository pollRepository;
@@ -25,7 +26,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
         public BotAdminHandler(BotClientService botClientService,
                                IBotCommandHelper botCommandHelper,
                                ICovidRepository covidRepository,
-                               BotPollResultSenderService botPollResultSender,
+                               IBotPollResultSenderService botPollResultSender,
                                IOptions<BotSettings> botOptions,
                                IPollChatRankingRepository pollChatRankingRepository,
                                IPollRepository pollRepository,

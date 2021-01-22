@@ -8,11 +8,12 @@ using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Exceptions;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types.Enums;
 
 namespace Telegram.Bot.CovidPoll.Services
 {
-    public class BotPollResultSenderService
+    public class BotPollResultSenderService : IBotPollResultSenderService
     {
         private readonly QueueService queueService;
         private readonly IChatRepository chatRepository;
@@ -49,11 +50,11 @@ namespace Telegram.Bot.CovidPoll.Services
         {
             queueService.QueueBackgroundWorkItem(async stoppingToken =>
             {
-                Log.Information($"[{nameof(BotPollResultSenderService)}] - Starting sending predictions...");
+                //Log.Information($"[{nameof(BotPollResultSenderService)}] - Starting sending predictions...");
                 var poll = await pollRepository.FindLatestAsync();
                 if (poll == null || poll.ChatPredictionsSended)
                 {
-                    Log.Information($"[{nameof(BotPollResultSenderService)}] - Predictions have been already sent.");
+                    //Log.Information($"[{nameof(BotPollResultSenderService)}] - Predictions have been already sent.");
                     return;
                 }
                 await pollRepository.SetPredictionsSendedAsync(poll.Id, true);
@@ -85,7 +86,7 @@ namespace Telegram.Bot.CovidPoll.Services
 
                     await Task.Delay(1000, stoppingToken);
                 }
-                Log.Information($"[{nameof(BotPollResultSenderService)}] - All predictions have been sent.");
+                //Log.Information($"[{nameof(BotPollResultSenderService)}] - All predictions have been sent.");
             });
         }
 
@@ -100,13 +101,13 @@ namespace Telegram.Bot.CovidPoll.Services
                 try
                 {
                     var cases = await covidCalculateService.GetActualNumberOfCasesAsync();
-                    if (cases.Date.Date != DateTime.UtcNow.Date)
+                    if (cases.Date.Date != DateTime.UtcNow.Date || poll.Date.Date != DateTime.UtcNow.Date.AddDays(-1))
                         return;
 
                     await pollRepository.SetPredictionsResultsSendedAsync(poll.Id, true);
 
-                    Log.Information(
-                        $"[{nameof(BotPollResultSenderService)}] - Starting sending predictions results...");
+                    //Log.Information(
+                        //$"[{nameof(BotPollResultSenderService)}] - Starting sending predictions results...");
                     var chats = await chatRepository.GetAll();
                     foreach (var chat in chats)
                     {
@@ -131,8 +132,8 @@ namespace Telegram.Bot.CovidPoll.Services
                         await Task.Delay(1000, stoppingToken);
                     }
 
-                    Log.Information(
-                        $"[{nameof(BotPollResultSenderService)}] - All predictions results have been sent.");
+                    //Log.Information(
+                        //$"[{nameof(BotPollResultSenderService)}] - All predictions results have been sent.");
                 }
                 catch (CovidCalculateException) {}
             });

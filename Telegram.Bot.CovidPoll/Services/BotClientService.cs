@@ -9,6 +9,7 @@ namespace Telegram.Bot.CovidPoll.Services
         {
             BotClient = new TelegramBotClient(botSettings.Value.Token);
         }
+
         public ITelegramBotClient BotClient { get; private set; }
     }
 }

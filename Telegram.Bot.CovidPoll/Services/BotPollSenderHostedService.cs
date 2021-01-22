@@ -9,6 +9,7 @@ using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Helpers.Models;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Services
 {
@@ -21,7 +22,7 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IPollRepository pollRepository;
         private readonly PollOptionsService pollOptionsService;
         private readonly IPollChatRepository pollChatRepository;
-        private readonly BotPollResultSenderService botPollResultSender;
+        private readonly IBotPollResultSenderService botPollResultSender;
         private readonly IPollConverterHelper pollConverterHelper;
         private readonly QueueService queueService;
         private readonly BotMessageHelper botMessageHelper;
@@ -33,7 +34,7 @@ namespace Telegram.Bot.CovidPoll.Services
                                           IPollRepository pollRepository,
                                           PollOptionsService pollOptionsService,
                                           IPollChatRepository pollChatRepository,
-                                          BotPollResultSenderService botPollResultSender,
+                                          IBotPollResultSenderService botPollResultSender,
                                           IPollConverterHelper pollConverterHelper,
                                           QueueService queueService,
                                           BotMessageHelper botMessageHelper)
@@ -85,7 +86,7 @@ namespace Telegram.Bot.CovidPoll.Services
 
         private async Task<bool> SendPolls(CancellationToken stoppingToken)
         {
-            Log.Information($"[{nameof(BotPollSenderHostedService)}] - Starting sending polls...");
+            //Log.Information($"[{nameof(BotPollSenderHostedService)}] - Starting sending polls...");
             var poll = await pollOptionsService.GetPollOptionsAsync(DateTime.UtcNow.Date);
             var chats = await chatRepository.GetAll();
             if (poll == null)
@@ -107,8 +108,8 @@ namespace Telegram.Bot.CovidPoll.Services
                         await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
                 });*/
-                Log.Information(
-                    $"[{nameof(BotPollSenderHostedService)}] - Polls haven't been sent. Not enough information about covid.");
+                //Log.Information(
+                    //$"[{nameof(BotPollSenderHostedService)}] - Polls haven't been sent. Not enough information about covid.");
             }
             else if (!poll.ChatPollsSended)
             {
@@ -135,7 +136,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
                 });
-                Log.Information($"[{nameof(BotPollSenderHostedService)}] - Polls have been sent.");
+                //Log.Information($"[{nameof(BotPollSenderHostedService)}] - Polls have been sent.");
 
                 return true;
             }
@@ -148,11 +149,11 @@ namespace Telegram.Bot.CovidPoll.Services
 
         private async Task StopPolls(CancellationToken stoppingToken)
         {
-            Log.Information($"[{nameof(BotPollSenderHostedService)}] - Starting closing polls...");
+            //Log.Information($"[{nameof(BotPollSenderHostedService)}] - Starting closing polls...");
             var poll = await pollRepository.FindLatestAsync();
             if (poll == null || poll.ChatPollsClosed)
             {
-                Log.Information($"[{nameof(BotPollSenderHostedService)}] - There is nothing to close.");
+                //Log.Information($"[{nameof(BotPollSenderHostedService)}] - There is nothing to close.");
                 return;
             }
 
@@ -174,7 +175,7 @@ namespace Telegram.Bot.CovidPoll.Services
                     }
                 });
             }
-            Log.Information($"[{nameof(BotPollSenderHostedService)}] - All polls have been closed.");
+            //Log.Information($"[{nameof(BotPollSenderHostedService)}] - All polls have been closed.");
         }
 
         private Task StopPoll(long chatId, int messageId, CancellationToken stoppingToken)

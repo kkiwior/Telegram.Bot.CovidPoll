@@ -26,7 +26,7 @@ namespace Telegram.Bot.CovidPoll.Services
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, $"[{nameof(QueueHostedService)}] - Error occurred executing {workItem}.");
+                    //Log.Error(ex, $"[{nameof(QueueHostedService)}] - Error occurred executing {workItem}.");
                 }
 
                 await Task.Delay(1000, stoppingToken);

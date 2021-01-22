@@ -1,13 +1,14 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Handlers;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll
 {
@@ -15,16 +16,7 @@ namespace Telegram.Bot.CovidPoll
     {
         public static void Main(string[] args)
         {
-            try
-            {
-                CreateHostBuilder(args).Build().Run();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Program exception.");
-            }
-
-            Log.CloseAndFlush();
+            CreateHostBuilder(args).Build().Run();
         }
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
@@ -58,17 +50,13 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<IBotEvent, BotNonPollHandler>();
                      services.AddSingleton<QueueService>();
                      services.AddSingleton<PollOptionsService>();
-                     services.AddSingleton<BotPollResultSenderService>();
+                     services.AddSingleton<IBotPollResultSenderService, BotPollResultSenderService>();
+                     services.AddSingleton<ICovidDownloadingService, CovidDownloadingService>();
                      services.AddHostedService<CovidTrackingHostedService>();
                      services.AddHostedService<BotEventsHostedService>();
                      services.AddHostedService<BotPollSenderHostedService>();
                      services.AddHostedService<QueueHostedService>();
-
-                     var seqConfiguration = hostContext.Configuration.GetSection("SerilogSettings");
-                     Log.Logger = new LoggerConfiguration()
-                         .WriteTo.Seq(seqConfiguration.GetSection("ServerUrl").Value, 
-                                      apiKey: seqConfiguration.GetSection(("ApiKey")).Value)
-                         .CreateLogger();
+                     services.AddLogging(c => c.AddSeq(hostContext.Configuration.GetSection("Seq")));
                  });
     }
 }
