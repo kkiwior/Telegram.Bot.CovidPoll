@@ -15,7 +15,6 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IBotClientService botClientService;
         private readonly IPollRepository pollRepository;
         private readonly ICovidCalculateService covidCalculateService;
-        private readonly IPollConverterHelper pollConverterHelper;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IPollVotesConverterHelper pollVotesConverterHelper;
         private readonly IUserRatioRepository userRatioRepository;
@@ -25,7 +24,7 @@ namespace Telegram.Bot.CovidPoll.Services
 
         public BotPollResultSenderService(IQueueService queueService, IChatRepository chatRepository, 
             IBotClientService botClientService, IPollRepository pollRepository, 
-            ICovidCalculateService covidCalculateService, IPollConverterHelper pollConverterHelper, 
+            ICovidCalculateService covidCalculateService, 
             IPollChatRankingRepository pollChatRankingRepository, 
             IPollVotesConverterHelper pollVotesConverterHelper, IUserRatioRepository userRatioRepository,
             ILogger<BotPollResultSenderService> log, IPredictionsResultService predictionsResultService,
@@ -36,7 +35,6 @@ namespace Telegram.Bot.CovidPoll.Services
             this.botClientService = botClientService;
             this.pollRepository = pollRepository;
             this.covidCalculateService = covidCalculateService;
-            this.pollConverterHelper = pollConverterHelper;
             this.pollChatRankingRepository = pollChatRankingRepository;
             this.pollVotesConverterHelper = pollVotesConverterHelper;
             this.userRatioRepository = userRatioRepository;
@@ -62,12 +60,7 @@ namespace Telegram.Bot.CovidPoll.Services
                 await pollRepository.SetPredictionsSendedAsync(poll.Id, true);
 
                 var chats = await chatRepository.GetAll();
-                int? covidCasesPrediction = null;
-                try
-                {
-                    covidCasesPrediction = await pollVotesConverterHelper.PredictCovidCasesAsync(poll);
-                }
-                catch (PredictCovidCasesException) {}
+                var covidCasesPrediction = await pollVotesConverterHelper.PredictCovidCasesAsync(poll);
                 foreach (var chat in chats)
                 {
                     var pollChat = poll.FindByChatId(chat.ChatId);
@@ -75,7 +68,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         continue;
 
                     var text = 
-                        predictionsResultService.GetAllPredictions(poll, pollChat, covidCasesPrediction);
+                        predictionsResultService.GetAllPredictions(pollChat, covidCasesPrediction);
                     try
                     {
                         await botClientService.BotClient.SendTextMessageAsync(
@@ -123,7 +116,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         
                         var covidToday = cases.Cases;
                         var text = await predictionsResultService
-                            .GetAllPredictionsResult(poll, pollChat, covidToday);
+                            .GetAllPredictionsResult(pollChat, covidToday);
 
                         try
                         {

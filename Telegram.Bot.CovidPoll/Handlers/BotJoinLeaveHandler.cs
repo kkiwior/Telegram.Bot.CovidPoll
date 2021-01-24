@@ -6,6 +6,7 @@ using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
+using Telegram.Bot.CovidPoll.Helpers.Models;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Models;
@@ -22,14 +23,12 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private readonly IPollChatRepository pollChatRepository;
         private readonly IOptions<BotSettings> botOptions;
         private readonly IOptions<CovidTrackingSettings> covidTrackingOptions;
-        private readonly IPollConverterHelper pollConverterHelper;
         private readonly IBotMessageHelper botMessageHelper;
 
         public BotJoinLeaveHandler(IBotClientService botClientService, IChatRepository chatRepository, 
             IPollChatRankingRepository pollChatRankingRepository, IPollRepository pollRepository, 
             IPollChatRepository pollChatRepository, IOptions<BotSettings> botOptions, 
-            IOptions<CovidTrackingSettings> covidTrackingOptions, IPollConverterHelper pollConverterHelper,
-            IBotMessageHelper botMessageHelper)
+            IOptions<CovidTrackingSettings> covidTrackingOptions, IBotMessageHelper botMessageHelper)
         {
             this.botClientService = botClientService;
             this.chatRepository = chatRepository;
@@ -38,7 +37,6 @@ namespace Telegram.Bot.CovidPoll.Handlers
             this.pollRepository = pollRepository;
             this.botOptions = botOptions;
             this.covidTrackingOptions = covidTrackingOptions;
-            this.pollConverterHelper = pollConverterHelper;
             this.botMessageHelper = botMessageHelper;
         }
 
@@ -79,8 +77,8 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         if (pollChat != null)
                             return;
 
-                        var convertedPollOptions = pollConverterHelper
-                            .ConvertOptionsToTextOptions(latestPoll.Options);
+                        var convertedPollOptions = latestPoll.Options
+                            .Select(o => o.ToString("### ###")).ToList();
 
                         var sendedPoll = await botMessageHelper
                             .SendPollAsync(e.Update.Message.Chat.Id, convertedPollOptions);

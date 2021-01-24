@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Exceptions;
-using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.CovidPoll.xUnit.Fixtures;

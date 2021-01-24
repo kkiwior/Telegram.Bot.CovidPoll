@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
-using Telegram.Bot.CovidPoll.Services.Models;
+using Telegram.Bot.CovidPoll.Helpers.Models;
 
 namespace Telegram.Bot.CovidPoll.Repositories.Interfaces
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Telegram.Bot.CovidPoll.Abstractions;
 
 namespace Telegram.Bot.CovidPoll.Db
 {
@@ -14,19 +15,7 @@ namespace Telegram.Bot.CovidPoll.Db
         public DateTime LastCommandDate { get; set; } = DateTime.UtcNow;
     }
 
-    public class PollAnswer
-    {
-        public long UserId { get; set; }
-        public string Username { get; set; }
-        public string UserFirstName { get; set; }
-        public int VoteId { get; set; }
-    }
+    public class PollAnswer : Answer {} 
 
-    public class NonPollAnswer
-    {
-        public long UserId { get; set; }
-        public string Username { get; set; }
-        public string UserFirstName { get; set; }
-        public int VoteNumber { get; set; }
-    }
+    public class NonPollAnswer : Answer {}
 }

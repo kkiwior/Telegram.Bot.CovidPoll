@@ -77,7 +77,8 @@ namespace Telegram.Bot.CovidPoll.Handlers
                     {
                         await pollChatRepository.AddVoteAsync(e.Update.PollAnswer.User.Id, 
                             e.Update.PollAnswer.User.Username, e.Update.PollAnswer.User.FirstName, 
-                            latestPoll.Id, e.Update.PollAnswer.PollId, e.Update.PollAnswer.OptionIds[0]);
+                            latestPoll.Id, e.Update.PollAnswer.PollId, 
+                            latestPoll.Options[e.Update.PollAnswer.OptionIds[0]]);
 
                         var alreadyVotedInNonPoll = await pollChatRepository
                             .CheckIfAlreadyVotedInNonPollAsync(e.Update.PollAnswer.User.Id, 

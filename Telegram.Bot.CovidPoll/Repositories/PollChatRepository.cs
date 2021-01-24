@@ -67,7 +67,7 @@ namespace Telegram.Bot.CovidPoll.Repositories
             var pollAnswers = new Db.PollAnswer()
             {
                 UserId = userId,
-                VoteId = vote,
+                VoteNumber = vote,
                 Username = username,
                 UserFirstName = userFirstName
             };

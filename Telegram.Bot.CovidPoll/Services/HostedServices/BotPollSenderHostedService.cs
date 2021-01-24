@@ -17,9 +17,9 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
         private readonly ITaskDelayHelper taskDelayHelper;
         private readonly IBotPollSenderService botPollSenderService;
 
-        public BotPollSenderHostedService(
-            IOptions<BotSettings> botSettings, IBotPollResultSenderService botPollResultSender,
-            ITaskDelayHelper taskDelayHelper, IBotPollSenderService botPollSenderService)
+        public BotPollSenderHostedService(IOptions<BotSettings> botSettings, 
+            IBotPollResultSenderService botPollResultSender, ITaskDelayHelper taskDelayHelper, 
+            IBotPollSenderService botPollSenderService)
         {
             this.botSettings = botSettings;
             this.botPollResultSender = botPollResultSender;
@@ -27,40 +27,38 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
             this.botPollSenderService = botPollSenderService;
         }
 
+        private DateTimeOffset PollsStart { get; set; }
+
+        private DateTimeOffset PollsEnd { get; set; }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var pollsStart = DateTimeOffset.UtcNow
+            PollsStart = DateTimeOffset.UtcNow
                 .ConvertUtcToPolishTime().Date.AddHours(botSettings.Value.PollsStartHour)
                 .ToUniversalTime();
 
-            var pollsEnd = DateTimeOffset.UtcNow
+            PollsEnd = DateTimeOffset.UtcNow
                 .ConvertUtcToPolishTime().Date.AddHours(botSettings.Value.PollsEndHour)
                 .ToUniversalTime();
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (DateTime.UtcNow >= pollsStart && DateTime.UtcNow <= pollsEnd)
+                if (DateTime.UtcNow >= PollsStart && DateTime.UtcNow <= PollsEnd)
                 {
                     var pollsResult = await botPollSenderService.SendPolls(stoppingToken);
                     if (pollsResult)
                     {
-                        pollsStart = DateTimeOffset.UtcNow.ConvertUtcToPolishTime().Date
-                            .AddDays(1)
-                            .AddHours(botSettings.Value.PollsStartHour)
-                            .ToUniversalTime();
+                        PollsStart = PollsStart.AddDays(1);
                     }
                     else
                     {
                         await taskDelayHelper.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                     }
                 }
-                else if (DateTime.UtcNow >= pollsEnd)
+                else if (DateTime.UtcNow >= PollsEnd)
                 {
                     await botPollSenderService.StopPolls(stoppingToken);
-                    pollsEnd = DateTimeOffset.UtcNow.ConvertUtcToPolishTime().Date
-                        .AddDays(1)
-                        .AddHours(botSettings.Value.PollsEndHour)
-                        .ToUniversalTime();
+                    PollsEnd = PollsEnd.AddDays(1);
 
                     botPollResultSender.SendPredictionsToChats();
                 }

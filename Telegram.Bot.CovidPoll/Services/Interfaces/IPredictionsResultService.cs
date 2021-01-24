@@ -5,7 +5,7 @@ namespace Telegram.Bot.CovidPoll.Services.Interfaces
 {
     public interface IPredictionsResultService
     {
-        string GetAllPredictions(Poll poll, PollChat pollChat, int? covidCasesPrediction);
-        Task<string> GetAllPredictionsResult(Poll poll, PollChat pollChat, int covidToday);
+        string GetAllPredictions(PollChat pollChat, int? covidCasesPrediction);
+        Task<string> GetAllPredictionsResult(PollChat pollChat, int covidToday);
     }
 }

@@ -43,7 +43,6 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<IPollChatRepository, PollChatRepository>();
                      services.AddSingleton<IPollChatRankingRepository, PollChatRankingRepository>();
                      services.AddSingleton<IChatMessageRepository, ChatMessageRepository>();
-                     services.AddSingleton<IPollConverterHelper, PollConverterHelper>();
                      services.AddSingleton<IChatUserCommandRepository, ChatUserCommandRepository>();
                      services.AddSingleton<IUserRatioRepository, UserRatioRepository>();
                      services.AddSingleton<IBotMessageHelper, BotMessageHelper>();
@@ -61,7 +60,7 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<ITaskDelayHelper, TaskDelayHelper>();
                      services.AddSingleton<IPredictionsResultService, PredictionsResultService>();
                      services.AddSingleton<IBotPollSenderService, BotPollSenderService>();
-                     services.AddHostedService<CovidTrackingHostedService>();
+                     //services.AddHostedService<CovidTrackingHostedService>();
                      services.AddHostedService<BotEventsHostedService>();
                      services.AddHostedService<BotPollSenderHostedService>();
                      services.AddHostedService<QueueHostedService>();

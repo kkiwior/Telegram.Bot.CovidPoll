@@ -31,37 +31,47 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
             this.taskDelayHelper = taskDelayHelper;
         }
 
+        private DateTimeOffset FetchDate { get; set; }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var fetchDate = DateTimeOffset.UtcNow
+            FetchDate = DateTimeOffset.UtcNow
                 .ConvertUtcToPolishTime().Date.AddHours(covidTrackingSettings.Value.FetchDataHour)
                 .ToUniversalTime();
 
+            await WorkerAsync(stoppingToken);
+        }
+
+        private async Task WorkerAsync(CancellationToken stoppingToken)
+        {
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (DateTime.UtcNow >= fetchDate)
+                if (DateTimeOffset.UtcNow >= FetchDate)
                 {
                     try
                     {
                         var result = await covidDownloadingService.DownloadCovidByJsonAsync();
                         if (result)
                         {
-                            fetchDate = DateTime.UtcNow.Date.AddDays(1)
-                                .AddHours(covidTrackingSettings.Value.FetchDataHour);
+                            FetchDate = FetchDate.AddDays(1);
                             log.LogInformation(
-                                $"[{nameof(CovidTrackingHostedService)}]: Data successfully downloaded" +
+                                $"[{nameof(CovidTrackingHostedService)}] - Data successfully downloaded" +
                                 "or is up to date");
                         }
                         else
                         {
                             log.LogError(
-                                @$"[{nameof(CovidTrackingHostedService)}]: Problem with downloading data");
-                            await taskDelayHelper.Delay(TimeSpan.FromMinutes(20), stoppingToken);
+                                @$"[{nameof(CovidTrackingHostedService)}] - Problem with downloading data");
+
+                            if (DateTimeOffset.UtcNow >= FetchDate.AddHours(3))
+                                await taskDelayHelper.Delay(TimeSpan.FromHours(3), stoppingToken);
+                            else
+                                await taskDelayHelper.Delay(TimeSpan.FromMinutes(20), stoppingToken);
                         }
                     }
                     catch (CovidParseException ex)
                     {
-                        log.LogError(ex, $"[{nameof(CovidTrackingHostedService)}]: CovidParseException");
+                        log.LogError(ex, $"[{nameof(CovidTrackingHostedService)}] - CovidParseException");
                         applicationLifetime.StopApplication();
                     }
                 }

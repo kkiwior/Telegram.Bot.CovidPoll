@@ -1,12 +1,10 @@
-﻿namespace Telegram.Bot.CovidPoll.Services.Models
+﻿namespace Telegram.Bot.CovidPoll.Abstractions
 {
-    public class PredictionsModel
+    public abstract class Answer
     {
         public long UserId { get; set; }
         public string Username { get; set; }
         public string UserFirstName { get; set; }
         public int VoteNumber { get; set; }
-        public long Points { get; set; }
-        public bool FromPoll { get; set; }
     }
 }

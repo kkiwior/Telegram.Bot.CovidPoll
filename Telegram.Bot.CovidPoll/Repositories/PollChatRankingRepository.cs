@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using System.Linq;
 using System;
-using Telegram.Bot.CovidPoll.Services.Models;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
+using Telegram.Bot.CovidPoll.Helpers.Models;
 
 namespace Telegram.Bot.CovidPoll.Repositories
 {

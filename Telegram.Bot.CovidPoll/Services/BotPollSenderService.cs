@@ -18,7 +18,6 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IPollRepository pollRepository;
         private readonly IPollOptionsService pollOptionsService;
         private readonly IPollChatRepository pollChatRepository;
-        private readonly IPollConverterHelper pollConverterHelper;
         private readonly IQueueService queueService;
         private readonly IBotMessageHelper botMessageHelper;
         private readonly ILogger<BotPollSenderService> log;
@@ -27,16 +26,14 @@ namespace Telegram.Bot.CovidPoll.Services
         public BotPollSenderService(IBotClientService botClientService,
             IChatRepository chatRepository, IPollRepository pollRepository,
             IPollOptionsService pollOptionsService, IPollChatRepository pollChatRepository,
-            IPollConverterHelper pollConverterHelper, IQueueService queueService,
-            IBotMessageHelper botMessageHelper, ILogger<BotPollSenderService> log,
-            ITaskDelayHelper taskDelayHelper)
+            IQueueService queueService, IBotMessageHelper botMessageHelper, 
+            ILogger<BotPollSenderService> log, ITaskDelayHelper taskDelayHelper)
         {
             this.botClientService = botClientService;
             this.chatRepository = chatRepository;
             this.pollRepository = pollRepository;
             this.pollOptionsService = pollOptionsService;
             this.pollChatRepository = pollChatRepository;
-            this.pollConverterHelper = pollConverterHelper;
             this.queueService = queueService;
             this.botMessageHelper = botMessageHelper;
             this.log = log;
@@ -52,7 +49,7 @@ namespace Telegram.Bot.CovidPoll.Services
             if (poll?.ChatPollsSended == false)
             {
                 await pollRepository.SetSendedAsync(poll.Id, true);
-                var convertedPollOptions = pollConverterHelper.ConvertOptionsToTextOptions(poll.Options);
+                var convertedPollOptions = poll.Options.ConvertAll(o => o.ToString("### ###"));
 
                 queueService.QueueBackgroundWorkItem(async stoppingToken =>
                 {
