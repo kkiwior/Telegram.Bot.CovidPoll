@@ -2,15 +2,16 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Services
 {
-    public class QueueService
+    public class QueueService : IQueueService
     {
         private readonly ConcurrentQueue<Func<CancellationToken, Task>> workItems;
         private SemaphoreSlim signal;
 
-        public QueueService(BotClientService botClientService)
+        public QueueService()
         {
             this.workItems = new ConcurrentQueue<Func<CancellationToken, Task>>();
             this.signal = new SemaphoreSlim(0);

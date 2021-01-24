@@ -3,6 +3,6 @@
     public class CovidTrackingSettings
     {
         public string Url { get; set; }
-        public int FetchDataHourUtc { get; set; }
+        public int FetchDataHour { get; set; }
     }
 }

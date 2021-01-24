@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Telegram.Bot.CovidPoll.Helpers
+namespace Telegram.Bot.CovidPoll.Helpers.Interfaces
 {
     public interface IPollConverterHelper
     {

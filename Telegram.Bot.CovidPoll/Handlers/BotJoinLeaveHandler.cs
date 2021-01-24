@@ -5,8 +5,9 @@ using System.Linq;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Helpers;
-using Telegram.Bot.CovidPoll.Repositories;
-using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Models;
 using Telegram.Bot.Types;
 
@@ -14,7 +15,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
 {
     public class BotJoinLeaveHandler : IBotEvent
     {
-        private readonly BotClientService botClientService;
+        private readonly IBotClientService botClientService;
         private readonly IChatRepository chatRepository;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IPollRepository pollRepository;
@@ -22,9 +23,9 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private readonly IOptions<BotSettings> botOptions;
         private readonly IOptions<CovidTrackingSettings> covidTrackingOptions;
         private readonly IPollConverterHelper pollConverterHelper;
-        private readonly BotMessageHelper botMessageHelper;
+        private readonly IBotMessageHelper botMessageHelper;
 
-        public BotJoinLeaveHandler(BotClientService botClientService,
+        public BotJoinLeaveHandler(IBotClientService botClientService,
                                    IChatRepository chatRepository,
                                    IPollChatRankingRepository pollChatRankingRepository,
                                    IPollRepository pollRepository,
@@ -32,7 +33,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                                    IOptions<BotSettings> botOptions,
                                    IOptions<CovidTrackingSettings> covidTrackingOptions,
                                    IPollConverterHelper pollConverterHelper,
-                                   BotMessageHelper botMessageHelper)
+                                   IBotMessageHelper botMessageHelper)
         {
             this.botClientService = botClientService;
             this.chatRepository = chatRepository;
@@ -47,9 +48,9 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
         public IList<BotCommand> Command => null;
 
-        public void RegisterEvent(BotClientService botClient)
+        public void RegisterEvent(IBotClientService botClient)
         {
-            botClientService.BotClient.OnUpdate += BotClient_OnUpdate;
+            botClient.BotClient.OnUpdate += BotClient_OnUpdate;
         }
 
         private async void BotClient_OnUpdate(object sender, UpdateEventArgs e)
@@ -74,7 +75,7 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         "3. Ankiety są zamykane oraz wyświetlają się przewidywania zakażeń o godzinie: " +
                         $"{botOptions.Value.PollsEndHourUtc} UTC\n" +
                         "4. Aktualne zakażenia oraz ranking osób najlepiej przewidujących pojawia się o godzinie: " +
-                        $"{covidTrackingOptions.Value.FetchDataHourUtc} UTC\n" +
+                        $"{covidTrackingOptions.Value.FetchDataHour} UTC\n" +
                         "\n<b>Dostępne komendy:</b>\n" +
                         "1. /ranking - wyświetla aktualny ranking osób najlepiej przewidujących.\n" +
                         "Każda osoba posiada współczynnik najlepszych trafień, wykorzystywany do obliczania przewidywanych zakażeń.\n" +

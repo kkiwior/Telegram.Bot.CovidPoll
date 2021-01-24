@@ -4,13 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Exceptions;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Models;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Models;
 
 namespace Telegram.Bot.CovidPoll.Helpers
 {
-    public class PollVotesConverterHelper
+    public class PollVotesConverterHelper : IPollVotesConverterHelper
     {
         private readonly IUserRatioRepository userRatioRepository;
         public PollVotesConverterHelper(IUserRatioRepository userRatioRepository)
@@ -41,7 +43,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
                 UserFirstName = pa.UserFirstName,
                 Username = pa.Username,
                 VoteNumber = poll.Options[pa.VoteId],
-                Points = covidToday != null ? GetCovidPoints((int) covidToday, poll.Options[pa.VoteId]) : 0,
+                Points = covidToday != null ? GetCovidPoints((int)covidToday, poll.Options[pa.VoteId]) : 0,
                 FromPoll = true
             }).ToList());
             answers.AddRange(pollChat.NonPollAnswers.Select(pa => new PredictionsModel
@@ -50,7 +52,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
                 UserFirstName = pa.UserFirstName,
                 Username = pa.Username,
                 VoteNumber = pa.VoteNumber,
-                Points = covidToday != null ? GetCovidPoints((int) covidToday, pa.VoteNumber) : 0,
+                Points = covidToday != null ? GetCovidPoints((int)covidToday, pa.VoteNumber) : 0,
                 FromPoll = false
             }).ToList());
 
@@ -94,11 +96,11 @@ namespace Telegram.Bot.CovidPoll.Helpers
 
         public async Task<int> PredictCovidCasesAsync(Poll poll)
         {
-            var pollsChats = poll.ChatPolls.Select(cp => new 
-            { 
+            var pollsChats = poll.ChatPolls.Select(cp => new
+            {
                 cp.ChatId,
-                cp.PollAnswers, 
-                cp.NonPollAnswers 
+                cp.PollAnswers,
+                cp.NonPollAnswers
             }).ToList();
             var casesRatio = new List<PredictCovidCasesModel>();
             foreach (var pollChat in pollsChats)
@@ -156,7 +158,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
                 if (casesRatioSum == 0 || casesVoteSum == 0)
                     return casesRatio.Select(cr => cr.VoteWithoutRatio).Sum() / casesRatio.Count;
 
-                return (int) (casesVoteSum / casesRatioSum);
+                return (int)(casesVoteSum / casesRatioSum);
             }
 
             throw new PredictCovidCasesException();
@@ -165,11 +167,11 @@ namespace Telegram.Bot.CovidPoll.Helpers
         private int GetCovidPoints(int covidToday, int voteNumber)
         {
             var multiplier = 1;
-            if ((double) covidToday / 100000 >= 1)
+            if ((double)covidToday / 100000 >= 1)
             {
                 multiplier = 3;
             }
-            else if((double) covidToday / 10000 >= 1)
+            else if ((double)covidToday / 10000 >= 1)
             {
                 multiplier = 2;
             }

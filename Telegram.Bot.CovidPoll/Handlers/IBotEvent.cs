@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 
 namespace Telegram.Bot.CovidPoll.Handlers
 {
     public interface IBotEvent
     {
-        void RegisterEvent(BotClientService botClient);
+        void RegisterEvent(IBotClientService botClient);
         IList<BotCommand> Command { get; }
     }
 }

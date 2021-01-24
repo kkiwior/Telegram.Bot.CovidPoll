@@ -6,6 +6,8 @@ using System.Linq;
 using System;
 using Telegram.Bot.CovidPoll.Services.Models;
 using Telegram.Bot.CovidPoll.Helpers;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Repositories
 {
@@ -13,19 +15,22 @@ namespace Telegram.Bot.CovidPoll.Repositories
     {
         private readonly MongoDb mongoDb;
         private readonly IUserRatioRepository userRatioRepository;
-        private readonly PollVotesConverterHelper pollVotesConverterHelper;
+        private readonly IPollVotesConverterHelper pollVotesConverterHelper;
+
         public PollChatRankingRepository(MongoDb mongoDb, 
                                          IUserRatioRepository userRatioRepository,
-                                         PollVotesConverterHelper pollVotesConverterHelper)
+                                         IPollVotesConverterHelper pollVotesConverterHelper)
         {
             this.mongoDb = mongoDb;
             this.userRatioRepository = userRatioRepository;
             this.pollVotesConverterHelper = pollVotesConverterHelper;
         }
+
         public Task AddChatToRankingAsync(ChatRanking chatRanking)
         {
             return mongoDb.ChatsRankings.InsertOneAsync(chatRanking);
         }
+
         public async Task AddWinsCountAsync(IList<PredictionsModel> winners, long chatId)
         {
             var ranking = await this.GetChatRankingAsync(chatId);
@@ -89,6 +94,7 @@ namespace Telegram.Bot.CovidPoll.Repositories
         {
             return mongoDb.ChatsRankings.Find(c => c.ChatId == chatId).FirstOrDefaultAsync();
         }
+
         public Task UpdateLastCommandDateAsync(long chatId, DateTime date)
         {
             return mongoDb.ChatsRankings.UpdateOneAsync(cr => cr.ChatId == chatId, 

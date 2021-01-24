@@ -10,34 +10,36 @@ using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Helpers.Models;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Services
 {
     public class BotPollSenderHostedService : BackgroundService
     {
-        private readonly BotClientService botClientService;
+        private readonly IBotClientService botClientService;
         private readonly IOptions<BotSettings> botSettings;
         private readonly IOptions<CovidTrackingSettings> covidSettings;
         private readonly IChatRepository chatRepository;
         private readonly IPollRepository pollRepository;
-        private readonly PollOptionsService pollOptionsService;
+        private readonly IPollOptionsService pollOptionsService;
         private readonly IPollChatRepository pollChatRepository;
         private readonly IBotPollResultSenderService botPollResultSender;
         private readonly IPollConverterHelper pollConverterHelper;
-        private readonly QueueService queueService;
-        private readonly BotMessageHelper botMessageHelper;
+        private readonly IQueueService queueService;
+        private readonly IBotMessageHelper botMessageHelper;
 
-        public BotPollSenderHostedService(BotClientService botClientService,
+        public BotPollSenderHostedService(IBotClientService botClientService,
                                           IOptions<BotSettings> botSettings,
                                           IOptions<CovidTrackingSettings> covidSettings,
                                           IChatRepository chatRepository,
                                           IPollRepository pollRepository,
-                                          PollOptionsService pollOptionsService,
+                                          IPollOptionsService pollOptionsService,
                                           IPollChatRepository pollChatRepository,
                                           IBotPollResultSenderService botPollResultSender,
                                           IPollConverterHelper pollConverterHelper,
-                                          QueueService queueService,
-                                          BotMessageHelper botMessageHelper)
+                                          IQueueService queueService,
+                                          IBotMessageHelper botMessageHelper)
         {
             this.botClientService = botClientService;
             this.botSettings = botSettings;

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Services.Models;
 
-namespace Telegram.Bot.CovidPoll.Repositories
+namespace Telegram.Bot.CovidPoll.Repositories.Interfaces
 {
     public interface IPollChatRankingRepository
     {

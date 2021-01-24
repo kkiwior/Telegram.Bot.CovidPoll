@@ -5,19 +5,21 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Models;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Telegram.Bot.CovidPoll.Helpers
 {
-    public class BotMessageHelper
+    public class BotMessageHelper : IBotMessageHelper
     {
-        private readonly BotClientService botClientService;
+        private readonly IBotClientService botClientService;
 
-        public BotMessageHelper(BotClientService botClientService)
+        public BotMessageHelper(IBotClientService botClientService)
         {
             this.botClientService = botClientService;
         }

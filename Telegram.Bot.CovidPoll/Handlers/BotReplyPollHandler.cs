@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Helpers;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using static Telegram.Bot.CovidPoll.Helpers.BotCommandHelper;
@@ -12,14 +15,12 @@ namespace Telegram.Bot.CovidPoll.Handlers
 {
     public class BotReplyPollHandler : IBotEvent
     {
-        private readonly BotClientService botClientService;
+        private readonly IBotClientService botClientService;
         private readonly IBotCommandHelper botCommandHelper;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IPollChatRepository pollChatRepository;
-        public BotReplyPollHandler(BotClientService botClientService,
-                                 IBotCommandHelper botCommandHelper,
-                                 IPollChatRankingRepository pollChatRankingRepository,
-                                 IPollChatRepository pollChatRepository)
+        public BotReplyPollHandler(IBotClientService botClientService, IBotCommandHelper botCommandHelper, 
+            IPollChatRankingRepository pollChatRankingRepository, IPollChatRepository pollChatRepository)
         {
             this.botClientService = botClientService;
             this.botCommandHelper = botCommandHelper;
@@ -37,9 +38,9 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 }
             };
 
-        public void RegisterEvent(BotClientService botClient)
+        public void RegisterEvent(IBotClientService botClient)
         {
-            botClientService.BotClient.OnMessage += BotClient_OnMessage;
+            botClient.BotClient.OnMessage += BotClient_OnMessage;
         }
 
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)

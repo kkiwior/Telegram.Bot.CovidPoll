@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using Telegram.Bot.CovidPoll.Db;
 
-namespace Telegram.Bot.CovidPoll.Repositories
+namespace Telegram.Bot.CovidPoll.Repositories.Interfaces
 {
     public interface IPollRepository
     {

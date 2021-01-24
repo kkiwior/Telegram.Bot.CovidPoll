@@ -1,14 +1,16 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Models;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Helpers
 {
     public class BotCommandHelper : IBotCommandHelper
     {
-        private readonly BotClientService botClientService;
-        public BotCommandHelper(BotClientService botClientService)
+        private readonly IBotClientService botClientService;
+        public BotCommandHelper(IBotClientService botClientService)
         {
             this.botClientService = botClientService;
         }

@@ -2,25 +2,28 @@
 using System.Linq;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Helpers;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 
 namespace Telegram.Bot.CovidPoll.Handlers
 {
     public class BotVoteHandler : IBotEvent
     {
-        private readonly BotClientService botClientService;
+        private readonly IBotClientService botClientService;
         private readonly IPollRepository pollRepository;
         private readonly IPollChatRepository pollChatRepository;
         private readonly IChatRepository chatRepository;
-        private readonly BotMessageHelper botMessageHelper;
+        private readonly IBotMessageHelper botMessageHelper;
 
-        public BotVoteHandler(BotClientService botClientService,
+        public BotVoteHandler(IBotClientService botClientService,
                               IPollRepository pollRepository,
                               IPollChatRepository pollChatRepository,
                               IChatRepository chatRepository,
-                              BotMessageHelper botMessageHelper)
+                              IBotMessageHelper botMessageHelper)
         {
             this.botClientService = botClientService;
             this.pollRepository = pollRepository;
@@ -31,9 +34,9 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
         public IList<BotCommand> Command => null;
 
-        public void RegisterEvent(BotClientService botClient)
+        public void RegisterEvent(IBotClientService botClient)
         {
-            botClientService.BotClient.OnUpdate += BotClient_OnUpdate;
+            botClient.BotClient.OnUpdate += BotClient_OnUpdate;
         }
 
         private async void BotClient_OnUpdate(object sender, UpdateEventArgs e)

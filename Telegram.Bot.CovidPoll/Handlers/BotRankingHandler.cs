@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Helpers;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using static Telegram.Bot.CovidPoll.Helpers.BotCommandHelper;
@@ -14,11 +17,11 @@ namespace Telegram.Bot.CovidPoll.Handlers
 {
     public class BotRankingHandler : IBotEvent
     {
-        private readonly BotClientService botClientService;
+        private readonly IBotClientService botClientService;
         private readonly IBotCommandHelper botCommandHelper;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IUserRatioRepository userRatioRepository;
-        public BotRankingHandler(BotClientService botClientService,
+        public BotRankingHandler(IBotClientService botClientService,
                                  IBotCommandHelper botCommandHelper,
                                  IPollChatRankingRepository pollChatRankingRepository,
                                  IUserRatioRepository userRatioRepository)
@@ -38,9 +41,9 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 } 
             };
 
-        public void RegisterEvent(BotClientService botClient)
+        public void RegisterEvent(IBotClientService botClient)
         {
-            botClientService.BotClient.OnMessage += BotClient_OnMessage;
+            botClient.BotClient.OnMessage += BotClient_OnMessage;
         }
 
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)

@@ -5,16 +5,18 @@ using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Exceptions;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Services
 {
-    public class PollOptionsService
+    public class PollOptionsService : IPollOptionsService
     {
         private readonly IPollRepository pollRepository;
-        private readonly CovidCalculateService covidCalculateService;
+        private readonly ICovidCalculateService covidCalculateService;
 
         public PollOptionsService(IPollRepository pollRepository,
-                                  CovidCalculateService covidCalculateService)
+                                  ICovidCalculateService covidCalculateService)
         {
             this.pollRepository = pollRepository;
             this.covidCalculateService = covidCalculateService;
@@ -32,7 +34,7 @@ namespace Telegram.Bot.CovidPoll.Services
                 if (pollOptionsInDb != null)
                     return pollOptionsInDb;
 
-                var covidToday = (double) cases.Cases;
+                var covidToday = (double)cases.Cases;
                 var pollOptions = new List<int>();
                 for (var i = 0; i < 10; i++)
                 {
@@ -58,11 +60,13 @@ namespace Telegram.Bot.CovidPoll.Services
                         if (covidToday < 4)
                             covidOption = i;
                         else
-                            covidOption = i < 5 ? (covidToday - 1 * i >= 0 ? covidToday - 1 * i : covidToday + 1 * (i - 4)) : covidToday + 1 * (i - 4);
+                            covidOption = i < 5 ?
+                                (covidToday - 1 * i >= 0 ? covidToday - 1 * i : covidToday + 1 * (i - 4))
+                                : covidToday + 1 * (i - 4);
                     }
                     covidOption = covidOption < 0 ? 0 : covidOption;
 
-                    pollOptions.Add((int) covidOption);
+                    pollOptions.Add((int)covidOption);
                 }
 
                 pollOptions = pollOptions.OrderBy(po => po).ToList();

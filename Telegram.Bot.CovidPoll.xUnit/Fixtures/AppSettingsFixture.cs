@@ -13,7 +13,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Fixtures
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.Production.json", false, true)
+                .AddJsonFile("appsettings.json", false, true)
                 .Build();
 
             CovidTrackingSettings = Options.Create(config.GetSection("CovidTrackingSettings")

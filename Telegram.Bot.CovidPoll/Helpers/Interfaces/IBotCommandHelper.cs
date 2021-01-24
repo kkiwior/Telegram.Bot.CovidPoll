@@ -2,7 +2,7 @@
 using Telegram.Bot.CovidPoll.Helpers.Models;
 using static Telegram.Bot.CovidPoll.Helpers.BotCommandHelper;
 
-namespace Telegram.Bot.CovidPoll.Helpers
+namespace Telegram.Bot.CovidPoll.Helpers.Interfaces
 {
     public interface IBotCommandHelper
     {

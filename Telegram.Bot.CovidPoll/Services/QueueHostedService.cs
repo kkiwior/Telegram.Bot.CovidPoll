@@ -3,14 +3,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Services
 {
     public class QueueHostedService : BackgroundService
     {
-        private readonly QueueService queueService;
+        private readonly IQueueService queueService;
 
-        public QueueHostedService(QueueService queueService)
+        public QueueHostedService(IQueueService queueService)
         {
             this.queueService = queueService;
         }

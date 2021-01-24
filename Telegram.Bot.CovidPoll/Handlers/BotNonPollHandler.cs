@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Helpers;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -15,20 +18,20 @@ namespace Telegram.Bot.CovidPoll.Handlers
 {
     public class BotNonPollHandler : IBotEvent
     {
-        private readonly BotClientService botClientService;
+        private readonly IBotClientService botClientService;
         private readonly IBotCommandHelper botCommandHelper;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IPollChatRepository pollChatRepository;
         private readonly IPollRepository pollRepository;
         private readonly IChatUserCommandRepository chatUserCommandRepository;
-        private readonly BotMessageHelper botMessageHelper;
-        public BotNonPollHandler(BotClientService botClientService,
+        private readonly IBotMessageHelper botMessageHelper;
+        public BotNonPollHandler(IBotClientService botClientService,
                                  IBotCommandHelper botCommandHelper,
                                  IPollChatRankingRepository pollChatRankingRepository,
                                  IPollChatRepository pollChatRepository,
                                  IPollRepository pollRepository,
                                  IChatUserCommandRepository chatUserCommandRepository,
-                                 BotMessageHelper botMessageHelper)
+                                 IBotMessageHelper botMessageHelper)
         {
             this.botClientService = botClientService;
             this.botCommandHelper = botCommandHelper;
@@ -49,10 +52,10 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 }
             };
 
-        public void RegisterEvent(BotClientService botClient)
+        public void RegisterEvent(IBotClientService botClient)
         {
-            botClientService.BotClient.OnMessage += BotClient_OnMessageVote;
-            botClientService.BotClient.OnCallbackQuery += BotClient_OnCallbackQuery;
+            botClient.BotClient.OnMessage += BotClient_OnMessageVote;
+            botClient.BotClient.OnCallbackQuery += BotClient_OnCallbackQuery;
         }
 
         private async void BotClient_OnCallbackQuery(object sender, CallbackQueryEventArgs e)

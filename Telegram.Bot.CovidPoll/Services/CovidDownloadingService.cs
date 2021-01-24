@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Exceptions;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Services

@@ -18,7 +18,6 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
     public class CovidDownloadingServiceTests : IClassFixture<AppSettingsFixture>
     {
         #region CONFIG
-        private HttpClient httpClientMock;
         private readonly Mock<HttpMessageHandler> httpMessageHandlerMock;
         private readonly AppSettingsFixture appSettingsFixture;
         private readonly ICovidDownloadingService serviceUnderTests;
@@ -26,8 +25,10 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
         private readonly Mock<IHttpClientFactory> httpClientFactoryMock;
         private readonly Mock<IHostApplicationLifetime> applicationLifetimeMock;
         private readonly Mock<IBotPollResultSenderService> botPollResultSenderMock;
-        private readonly string httpMessageContent = "{\"features\": [{\"attributes\":{\"Data\": 1611221413886,\"ZAKAZENIA_DZIENNE\": 7152}}]}";
-        private readonly DateTime date = DateTimeOffset.FromUnixTimeMilliseconds(1611221413886).UtcDateTime;
+        private readonly string httpMessageContent = 
+            "{\"features\": [{\"attributes\":{\"Data\": 1611221413886,\"ZAKAZENIA_DZIENNE\": 7152}}]}";
+        private readonly DateTime date = 
+            DateTimeOffset.FromUnixTimeMilliseconds(1611221413886).UtcDateTime;
         private readonly int cases = 7152;
 
         public CovidDownloadingServiceTests(AppSettingsFixture appSettingsFixture)
@@ -63,7 +64,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
                     Content = new StringContent(httpMessageContent)
                 });
 
-            httpClientMock = new HttpClient(httpMessageHandlerMock.Object);
+            var httpClientMock = new HttpClient(httpMessageHandlerMock.Object);
             httpClientFactoryMock.Setup(h => h.CreateClient(It.IsAny<string>()))
                 .Returns(httpClientMock);
 
@@ -106,7 +107,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
                     Content = new StringContent("{")
                 });
 
-            httpClientMock = new HttpClient(httpMessageHandlerMock.Object);
+            var httpClientMock = new HttpClient(httpMessageHandlerMock.Object);
             httpClientFactoryMock.Setup(h => h.CreateClient(It.IsAny<string>()))
                 .Returns(httpClientMock);
 
@@ -167,7 +168,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
                    Content = new StringContent(httpMessageContent)
                });
 
-            httpClientMock = new HttpClient(httpMessageHandlerMock.Object);
+            var httpClientMock = new HttpClient(httpMessageHandlerMock.Object);
             httpClientFactoryMock.Setup(h => h.CreateClient(It.IsAny<string>()))
                 .Returns(httpClientMock);
 
@@ -213,7 +214,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
                    Content = new StringContent(pageDate)
                });
 
-            httpClientMock = new HttpClient(httpMessageHandlerMock.Object);
+            var httpClientMock = new HttpClient(httpMessageHandlerMock.Object);
             httpClientFactoryMock.Setup(h => h.CreateClient(It.IsAny<string>()))
                 .Returns(httpClientMock);
 

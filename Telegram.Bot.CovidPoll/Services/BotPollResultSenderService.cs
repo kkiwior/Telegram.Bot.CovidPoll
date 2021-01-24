@@ -7,7 +7,9 @@ using Serilog;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Exceptions;
 using Telegram.Bot.CovidPoll.Helpers;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types.Enums;
 
@@ -15,24 +17,24 @@ namespace Telegram.Bot.CovidPoll.Services
 {
     public class BotPollResultSenderService : IBotPollResultSenderService
     {
-        private readonly QueueService queueService;
+        private readonly IQueueService queueService;
         private readonly IChatRepository chatRepository;
-        private readonly BotClientService botClientService;
+        private readonly IBotClientService botClientService;
         private readonly IPollRepository pollRepository;
-        private readonly CovidCalculateService covidCalculateService;
+        private readonly ICovidCalculateService covidCalculateService;
         private readonly IPollConverterHelper pollConverterHelper;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
-        private readonly PollVotesConverterHelper pollVotesConverterHelper;
+        private readonly IPollVotesConverterHelper pollVotesConverterHelper;
         private readonly IUserRatioRepository userRatioRepository;
 
-        public BotPollResultSenderService(QueueService queueService,
+        public BotPollResultSenderService(IQueueService queueService,
                                           IChatRepository chatRepository,
-                                          BotClientService botClientService,
+                                          IBotClientService botClientService,
                                           IPollRepository pollRepository,
-                                          CovidCalculateService covidCalculateService,
+                                          ICovidCalculateService covidCalculateService,
                                           IPollConverterHelper pollConverterHelper,
                                           IPollChatRankingRepository pollChatRankingRepository,
-                                          PollVotesConverterHelper pollVotesConverterHelper,
+                                          IPollVotesConverterHelper pollVotesConverterHelper,
                                           IUserRatioRepository userRatioRepository)
         {
             this.queueService = queueService;

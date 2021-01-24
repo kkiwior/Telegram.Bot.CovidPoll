@@ -1,13 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Exceptions;
-using Telegram.Bot.CovidPoll.Repositories;
+using Telegram.Bot.CovidPoll.Repositories.Interfaces;
+using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Models;
 
 namespace Telegram.Bot.CovidPoll.Services
 {
-    public class CovidCalculateService
+    public class CovidCalculateService : ICovidCalculateService
     {
         private readonly ICovidRepository covidRepository;
 
