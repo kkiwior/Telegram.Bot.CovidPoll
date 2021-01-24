@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Exceptions;
-using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 
@@ -25,11 +24,9 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IHostApplicationLifetime applicationLifetime;
         private readonly IBotPollResultSenderService botPollResultSender;
 
-        public CovidDownloadingService(IOptions<CovidTrackingSettings> covidTrackingSettings,
-                                          ICovidRepository covidRepository,
-                                          IHttpClientFactory httpClient,
-                                          IHostApplicationLifetime applicationLifetime,
-                                          IBotPollResultSenderService botPollResultSender)
+        public CovidDownloadingService(IOptions<CovidTrackingSettings> covidTrackingSettings, 
+            ICovidRepository covidRepository, IHttpClientFactory httpClient, 
+            IHostApplicationLifetime applicationLifetime, IBotPollResultSenderService botPollResultSender)
         {
             this.covidTrackingSettings = covidTrackingSettings;
             this.covidRepository = covidRepository;
@@ -105,10 +102,13 @@ namespace Telegram.Bot.CovidPoll.Services
             {
                 var htmlContent = await response.Content.ReadAsStringAsync();
 
-                var datePattern =
-                    "<div id=\"global-stats\">\\n<div class=\"global-stats\">\\n<p>Dane pochodzą z Ministerstwa Zdrowia,\\s*aktualne\\s*na\\s*:\\s*(\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2})\\s*<a";
-                var casesPattern =
-                    "<pre id=\"registerData\" class=\"hide\">{\"description\":\".*\",\"data\":\".*Cały kraj;([0-9]*).*<\\/pre>";
+                var datePattern = "<div id=\"global-stats\">\\n<div class=\"global-stats\">\\n<p>" +
+                    "Dane pochodzą z Ministerstwa Zdrowia,\\s*aktualne\\s*na\\s*:\\s*" +
+                    "(\\d{2}.\\d{2}.\\d{4} \\d{2}:\\d{2})\\s*<a";
+
+                var casesPattern ="<pre id=\"registerData\" class=\"hide\">{\"description\":\".*\"," +
+                    "\"data\":\".*Cały kraj;([0-9]*).*<\\/pre>";
+
                 var dateRegex = new Regex(datePattern, RegexOptions.IgnoreCase).Match(htmlContent);
                 var casesRegex = new Regex(casesPattern, RegexOptions.IgnoreCase).Match(htmlContent);
 

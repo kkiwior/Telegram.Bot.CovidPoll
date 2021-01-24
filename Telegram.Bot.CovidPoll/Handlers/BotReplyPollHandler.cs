@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Telegram.Bot.Args;
-using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
-using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
-using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -17,14 +14,13 @@ namespace Telegram.Bot.CovidPoll.Handlers
     {
         private readonly IBotClientService botClientService;
         private readonly IBotCommandHelper botCommandHelper;
-        private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IPollChatRepository pollChatRepository;
+
         public BotReplyPollHandler(IBotClientService botClientService, IBotCommandHelper botCommandHelper, 
-            IPollChatRankingRepository pollChatRankingRepository, IPollChatRepository pollChatRepository)
+            IPollChatRepository pollChatRepository)
         {
             this.botClientService = botClientService;
             this.botCommandHelper = botCommandHelper;
-            this.pollChatRankingRepository = pollChatRankingRepository;
             this.pollChatRepository = pollChatRepository;
         }
 
@@ -46,13 +42,15 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)
         {
             var n = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommands.poll, e.Message.Text);
-            if (n.CommandCorrect && (e.Message.Chat.Type == ChatType.Supergroup || e.Message.Chat.Type == ChatType.Group))
+            if (n.CommandCorrect && 
+                (e.Message.Chat.Type == ChatType.Supergroup || e.Message.Chat.Type == ChatType.Group))
             {
                 var pollChat = await pollChatRepository.FindLatestByChatIdAsync(e.Message.Chat.Id);
                 if (pollChat == null || pollChat.LastCommandDate.AddSeconds(4) >= DateTime.UtcNow)
                     return;
 
                 await pollChatRepository.UpdateLastCommandDateAsync(e.Message.Chat.Id, DateTime.UtcNow);
+
                 try
                 {
                     await botClientService.BotClient.SendTextMessageAsync(

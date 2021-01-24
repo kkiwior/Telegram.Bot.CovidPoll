@@ -5,7 +5,6 @@ using Telegram.Bot.CovidPoll.Db;
 using System.Linq;
 using System;
 using Telegram.Bot.CovidPoll.Services.Models;
-using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 
@@ -17,9 +16,8 @@ namespace Telegram.Bot.CovidPoll.Repositories
         private readonly IUserRatioRepository userRatioRepository;
         private readonly IPollVotesConverterHelper pollVotesConverterHelper;
 
-        public PollChatRankingRepository(MongoDb mongoDb, 
-                                         IUserRatioRepository userRatioRepository,
-                                         IPollVotesConverterHelper pollVotesConverterHelper)
+        public PollChatRankingRepository(MongoDb mongoDb, IUserRatioRepository userRatioRepository,
+            IPollVotesConverterHelper pollVotesConverterHelper)
         {
             this.mongoDb = mongoDb;
             this.userRatioRepository = userRatioRepository;
@@ -81,9 +79,14 @@ namespace Telegram.Bot.CovidPoll.Repositories
                 }
                 userRatio.Ratio = (double) chatWinner.Points / pollVotesConverterHelper.Points.Values.Max() / chatWinner.TotalVotes;
                 if (ratio == null)
+                {
                     await userRatioRepository.AddAsync(userRatio);
+                }
                 else
-                    await userRatioRepository.UpdateAsync(userRatio.UserId, userRatio.ChatId, userRatio.Ratio);
+                {
+                    await userRatioRepository
+                        .UpdateAsync(userRatio.UserId, userRatio.ChatId, userRatio.Ratio);
+                }
             }
             if (ranking.Winners.Count > 0)
             {

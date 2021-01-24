@@ -22,6 +22,7 @@ namespace Telegram.Bot.CovidPoll.Db
         {
             return ChatPolls.Where(cp => cp.ChatId == chatId).FirstOrDefault();
         }
+
         public PollChat FindByPollId(string pollId)
         {
             return ChatPolls.Where(cp => cp.PollId.Equals(pollId)).FirstOrDefault();

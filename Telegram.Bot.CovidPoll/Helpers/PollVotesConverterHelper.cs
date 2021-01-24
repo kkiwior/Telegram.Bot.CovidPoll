@@ -6,7 +6,6 @@ using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Exceptions;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Models;
-using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Models;
 
@@ -15,6 +14,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
     public class PollVotesConverterHelper : IPollVotesConverterHelper
     {
         private readonly IUserRatioRepository userRatioRepository;
+
         public PollVotesConverterHelper(IUserRatioRepository userRatioRepository)
         {
             this.userRatioRepository = userRatioRepository;
@@ -33,7 +33,8 @@ namespace Telegram.Bot.CovidPoll.Helpers
             {1800, 2},
             {2000, 1}
         };
-        public IList<PredictionsModel> ConvertPollVotes(Poll poll, PollChat pollChat, int? covidToday = null)
+        public IList<PredictionsModel> ConvertPollVotes(Poll poll, PollChat pollChat, 
+            int? covidToday = null)
         {
             var answers = new List<PredictionsModel>();
 
@@ -46,6 +47,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
                 Points = covidToday != null ? GetCovidPoints((int)covidToday, poll.Options[pa.VoteId]) : 0,
                 FromPoll = true
             }).ToList());
+
             answers.AddRange(pollChat.NonPollAnswers.Select(pa => new PredictionsModel
             {
                 UserId = pa.UserId,
@@ -89,7 +91,8 @@ namespace Telegram.Bot.CovidPoll.Helpers
                     FromPoll = false
                 });
             });
-            possibilities = possibilities.OrderBy(p => p.VoteNumber).ThenByDescending(p => p.FromPoll).ToList();
+            possibilities = possibilities.OrderBy(p => p.VoteNumber)
+                .ThenByDescending(p => p.FromPoll).ToList();
 
             return possibilities;
         }
@@ -178,7 +181,8 @@ namespace Telegram.Bot.CovidPoll.Helpers
             if (Math.Abs(covidToday - voteNumber) > Points.Keys.Max())
                 return 0;
 
-            return Points.FirstOrDefault(p => p.Key * multiplier >= Math.Abs(covidToday - voteNumber)).Value;
+            return Points
+                .FirstOrDefault(p => p.Key * multiplier >= Math.Abs(covidToday - voteNumber)).Value;
         }
     }
 }

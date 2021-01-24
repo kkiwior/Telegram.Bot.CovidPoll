@@ -21,16 +21,16 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private readonly IBotCommandHelper botCommandHelper;
         private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IUserRatioRepository userRatioRepository;
-        public BotRankingHandler(IBotClientService botClientService,
-                                 IBotCommandHelper botCommandHelper,
-                                 IPollChatRankingRepository pollChatRankingRepository,
-                                 IUserRatioRepository userRatioRepository)
+
+        public BotRankingHandler(IBotClientService botClientService, IBotCommandHelper botCommandHelper, 
+            IPollChatRankingRepository pollChatRankingRepository, IUserRatioRepository userRatioRepository)
         {
             this.botClientService = botClientService;
             this.botCommandHelper = botCommandHelper;
             this.pollChatRankingRepository = pollChatRankingRepository;
             this.userRatioRepository = userRatioRepository;
         }
+
         public IList<BotCommand> Command => 
             new List<BotCommand> 
             { 
@@ -49,31 +49,41 @@ namespace Telegram.Bot.CovidPoll.Handlers
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)
         {
             var n = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommands.ranking, e.Message.Text);
-            if (n.CommandCorrect && (e.Message.Chat.Type == ChatType.Supergroup || e.Message.Chat.Type == ChatType.Group))
+            if (n.CommandCorrect && 
+                (e.Message.Chat.Type == ChatType.Supergroup || e.Message.Chat.Type == ChatType.Group))
             {
                 var ranking = await pollChatRankingRepository.GetChatRankingAsync(e.Message.Chat.Id);
                 if (ranking == null || ranking.LastCommandDate.AddSeconds(4) >= DateTime.UtcNow)
                     return;
 
-                await pollChatRankingRepository.UpdateLastCommandDateAsync(e.Message.Chat.Id, DateTime.UtcNow);
-                var sb = new StringBuilder("<b>Ogólny ranking:</b>"); sb.AppendLine();
+                await pollChatRankingRepository
+                    .UpdateLastCommandDateAsync(e.Message.Chat.Id, DateTime.UtcNow);
+
+                var sb = new StringBuilder("<b>Ogólny ranking:</b>\n");
                 if (ranking.Winners.Count == 0)
                     sb.AppendLine("\nBrak osób, które poprawnie przewidziały.");
 
                 var usersRatio = await userRatioRepository.GetAsync(e.Message.Chat.Id);
-                foreach (var winner in ranking.Winners.OrderByDescending(w => w.Points).Select((value, index) => new { value, index }))
+                foreach (var winner in ranking.Winners
+                    .OrderByDescending(w => w.Points).Select((value, index) => new { value, index }))
                 {
-                    var userRatio = usersRatio.FirstOrDefault(ur => ur.UserId == winner.value.UserId)?.Ratio;
+                    var userRatio = usersRatio
+                        .FirstOrDefault(ur => ur.UserId == winner.value.UserId)?.Ratio;
+
                     if (userRatio != null)
                     {
-                        userRatio = Math.Round((double) userRatio, 3);
-                        sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}" +
-                                      $" - {winner.value.Points} punkty/ów ({userRatio})");
+                        sb.AppendLine(
+                            $"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}" +
+                            $" - {winner.value.Points} punkty/ów ({userRatio:N3})");
                     }
                     else
-                        sb.AppendLine($"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}" +
-                                      $" - {winner.value.Points} punkty/ów");
+                    {
+                        sb.AppendLine(
+                            $"{winner.index + 1}. {winner.value.Username ?? winner.value.UserFirstName}" +
+                            $" - {winner.value.Points} punkty/ów");
+                    }
                 }
+
                 sb.AppendLine("\nKomendę można wywołać co 4 sekundy.");
                 try
                 {

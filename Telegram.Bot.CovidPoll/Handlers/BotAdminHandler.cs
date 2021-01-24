@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Config;
-using Telegram.Bot.CovidPoll.Helpers;
+using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
@@ -38,18 +38,20 @@ namespace Telegram.Bot.CovidPoll.Handlers
 
         private async void BotClient_OnMessage(object sender, MessageEventArgs e)
         {
-            var command = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommands.setCovid, e.Message.Text);
+            var command = await botCommandHelper
+                .CheckCommandIsCorrectAsync(BotCommands.setCovid, e.Message.Text);
+
             if (command.CommandCorrect)
             {
                 if (e.Message.From.Id == botOptions.Value.AdminUserId)
                 {
-                    if (int.TryParse(command.CommandArg, out var newCases))
+                    if (int.TryParse(command.CommandArg, out var newCases) && newCases >= 0)
                     {
                         var latestCovid = await covidRepository.FindLatestAsync();
                         if (latestCovid != null && DateTime.UtcNow.Date <= latestCovid.Date)
                             return;
 
-                        await covidRepository.AddAsync(new Db.Covid
+                        await covidRepository.AddAsync(new Covid
                         {
                             NewCases = newCases,
                             Date = DateTime.UtcNow.Date

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Versioning;
 using Telegram.Bot.CovidPoll.Exceptions;
 
 namespace Telegram.Bot.CovidPoll.Extensions
@@ -15,8 +14,8 @@ namespace Telegram.Bot.CovidPoll.Extensions
                 { PlatformID.Unix,  "Europe/Warsaw" }
             };
 
-        [SupportedOSPlatform("Windows")]
-        [SupportedOSPlatform("Linux")]
+        //[SupportedOSPlatform("Windows")]
+        //[SupportedOSPlatform("Linux")]
         public static DateTimeOffset ConvertUtcToPolishTime(this DateTimeOffset date)
         {
             DateTimeOffset? convertedDate = null;

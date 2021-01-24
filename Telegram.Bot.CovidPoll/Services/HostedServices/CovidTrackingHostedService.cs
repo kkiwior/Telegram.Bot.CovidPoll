@@ -10,7 +10,7 @@ using Telegram.Bot.CovidPoll.Extensions;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 
-namespace Telegram.Bot.CovidPoll.Services
+namespace Telegram.Bot.CovidPoll.Services.HostedServices
 {
     public class CovidTrackingHostedService : BackgroundService
     {

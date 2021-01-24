@@ -27,13 +27,15 @@ namespace Telegram.Bot.CovidPoll.Repositories
 
         public Task<ChatUserCommand> FindAsync(long chatId, long userId)
         {
-            return mongoDb.ChatsUsersCommands.Find(cuc => cuc.ChatId == chatId && cuc.UserId == userId).FirstOrDefaultAsync();
+            return mongoDb.ChatsUsersCommands.Find(cuc => cuc.ChatId == chatId && cuc.UserId == userId)
+                .FirstOrDefaultAsync();
         }
 
         public Task UpdateLastCommandAsync(long chatId, long userId, DateTime date)
         {
-            return mongoDb.ChatsUsersCommands.UpdateOneAsync(cuc => cuc.ChatId == chatId && cuc.UserId == userId,
-                Builders<ChatUserCommand>.Update.Set(cuc => cuc.LastCommandDate, date));
+            return mongoDb.ChatsUsersCommands
+                .UpdateOneAsync(cuc => cuc.ChatId == chatId && cuc.UserId == userId,
+                    Builders<ChatUserCommand>.Update.Set(cuc => cuc.LastCommandDate, date));
         }
     }
 }

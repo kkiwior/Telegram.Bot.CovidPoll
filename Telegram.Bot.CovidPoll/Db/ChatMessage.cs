@@ -11,6 +11,7 @@ namespace Telegram.Bot.CovidPoll.Db
         public int MessageId { get; set; }
         public ChatMessageType ChatMessageType { get; set; }
     }
+
     public enum ChatMessageType
     {
         Poll,

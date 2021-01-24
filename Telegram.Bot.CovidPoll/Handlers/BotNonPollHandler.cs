@@ -5,9 +5,7 @@ using System.Text;
 using Telegram.Bot.Args;
 using Telegram.Bot.CovidPoll.Helpers;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
-using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
-using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -20,22 +18,17 @@ namespace Telegram.Bot.CovidPoll.Handlers
     {
         private readonly IBotClientService botClientService;
         private readonly IBotCommandHelper botCommandHelper;
-        private readonly IPollChatRankingRepository pollChatRankingRepository;
         private readonly IPollChatRepository pollChatRepository;
         private readonly IPollRepository pollRepository;
         private readonly IChatUserCommandRepository chatUserCommandRepository;
         private readonly IBotMessageHelper botMessageHelper;
-        public BotNonPollHandler(IBotClientService botClientService,
-                                 IBotCommandHelper botCommandHelper,
-                                 IPollChatRankingRepository pollChatRankingRepository,
-                                 IPollChatRepository pollChatRepository,
-                                 IPollRepository pollRepository,
-                                 IChatUserCommandRepository chatUserCommandRepository,
-                                 IBotMessageHelper botMessageHelper)
+
+        public BotNonPollHandler(IBotClientService botClientService, IBotCommandHelper botCommandHelper, 
+            IPollChatRepository pollChatRepository, IPollRepository pollRepository, 
+            IChatUserCommandRepository chatUserCommandRepository, IBotMessageHelper botMessageHelper)
         {
             this.botClientService = botClientService;
             this.botCommandHelper = botCommandHelper;
-            this.pollChatRankingRepository = pollChatRankingRepository;
             this.pollChatRepository = pollChatRepository;
             this.pollRepository = pollRepository;
             this.chatUserCommandRepository = chatUserCommandRepository;
@@ -65,29 +58,44 @@ namespace Telegram.Bot.CovidPoll.Handlers
                 return;
 
             var pollChat = poll.FindByChatId(e.CallbackQuery.Message.Chat.Id);
-            var userLastCommand = await chatUserCommandRepository.FindAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.From.Id);
+            var userLastCommand = await chatUserCommandRepository
+                .FindAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.From.Id);
+
             if (userLastCommand == null)
-                await chatUserCommandRepository.AddAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.From.Id, DateTime.UtcNow);
+            {
+                await chatUserCommandRepository
+                    .AddAsync(e.CallbackQuery.Message.Chat.Id, e.CallbackQuery.From.Id, DateTime.UtcNow);
+            }
 
             if (pollChat == null || userLastCommand?.LastCommandDate.AddSeconds(10) >= DateTime.UtcNow)
                 return;
 
-            await chatUserCommandRepository.UpdateLastCommandAsync(e.CallbackQuery.Message.Chat.Id, 
-                                                                   e.CallbackQuery.From.Id, DateTime.UtcNow);
+            await chatUserCommandRepository
+                .UpdateLastCommandAsync(e.CallbackQuery.Message.Chat.Id, 
+                    e.CallbackQuery.From.Id, DateTime.UtcNow);
 
-            var voted = await pollChatRepository.CheckIfAlreadyVotedInNonPollAsync(e.CallbackQuery.From.Id, poll.Id, pollChat.PollId);
+            var voted = await pollChatRepository
+                .CheckIfAlreadyVotedInNonPollAsync(e.CallbackQuery.From.Id, poll.Id, pollChat.PollId);
+
             if (voted)
             {
-                await pollChatRepository.RemoveNonPollVoteAsync(e.CallbackQuery.From.Id, poll.Id, pollChat.PollId);
-                pollChat.NonPollAnswers.Remove(pollChat.NonPollAnswers.FirstOrDefault(np => np.UserId == e.CallbackQuery.From.Id));
+                await pollChatRepository
+                    .RemoveNonPollVoteAsync(e.CallbackQuery.From.Id, poll.Id, pollChat.PollId);
 
-                await botMessageHelper.RemoveVoteFromNonPollAsync(pollChat, e.CallbackQuery.Message.Chat.Id);
+                pollChat.NonPollAnswers
+                    .Remove(pollChat.NonPollAnswers
+                        .FirstOrDefault(np => np.UserId == e.CallbackQuery.From.Id));
+
+                await botMessageHelper
+                    .RemoveVoteFromNonPollAsync(pollChat, e.CallbackQuery.Message.Chat.Id);
             }
         }
 
         private async void BotClient_OnMessageVote(object sender, MessageEventArgs e)
         {
-            var command = await botCommandHelper.CheckCommandIsCorrectAsync(BotCommands.vote, e.Message.Text);
+            var command = await botCommandHelper
+                .CheckCommandIsCorrectAsync(BotCommands.vote, e.Message.Text);
+
             if (command.CommandCorrect && 
                 command.CommandArg != string.Empty && 
                 e.Message.Chat.Type is ChatType.Supergroup or ChatType.Group)
@@ -97,21 +105,31 @@ namespace Telegram.Bot.CovidPoll.Handlers
                     return;
 
                 var pollChat = poll.FindByChatId(e.Message.Chat.Id);
-                var userLastCommand = await chatUserCommandRepository.FindAsync(e.Message.Chat.Id, e.Message.From.Id);
+
+                var userLastCommand = await chatUserCommandRepository
+                    .FindAsync(e.Message.Chat.Id, e.Message.From.Id);
+
                 if (userLastCommand == null)
-                    await chatUserCommandRepository.AddAsync(e.Message.Chat.Id, e.Message.From.Id, DateTime.UtcNow);
+                {
+                    await chatUserCommandRepository
+                        .AddAsync(e.Message.Chat.Id, e.Message.From.Id, DateTime.UtcNow);
+                }
 
                 if (pollChat == null || userLastCommand?.LastCommandDate.AddSeconds(10) >= DateTime.UtcNow)
                     return;
 
-                var votedInPoll = await pollChatRepository.CheckIfAlreadyVotedAsync(e.Message.From.Id, poll.Id, pollChat.PollId);
+                var votedInPoll = await pollChatRepository
+                    .CheckIfAlreadyVotedAsync(e.Message.From.Id, poll.Id, pollChat.PollId);
+
                 if (votedInPoll)
                     return;
 
-                await chatUserCommandRepository.UpdateLastCommandAsync(e.Message.Chat.Id, e.Message.From.Id, DateTime.UtcNow);
+                await chatUserCommandRepository
+                    .UpdateLastCommandAsync(e.Message.Chat.Id, e.Message.From.Id, DateTime.UtcNow);
 
-                var pollChatVoted = await pollChatRepository.CheckIfAlreadyVotedInPollOrNonPollAsync(e.Message.From.Id, 
-                                                                                                     poll.Id, pollChat.PollId);
+                var pollChatVoted = await pollChatRepository
+                    .CheckIfAlreadyVotedInPollOrNonPollAsync(e.Message.From.Id, poll.Id, pollChat.PollId);
+
                 if (pollChatVoted == true)
                     return;
 
@@ -146,8 +164,9 @@ namespace Telegram.Bot.CovidPoll.Handlers
                         );
                     }
                     catch (Exception) {}
-                    await pollChatRepository.AddNonPollVoteAsync(e.Message.From.Id, e.Message.From.Username, e.Message.From.FirstName, 
-                                                                 poll.Id, pollChat.PollId, voteNumber);
+                    await pollChatRepository
+                        .AddNonPollVoteAsync(e.Message.From.Id, e.Message.From.Username, 
+                            e.Message.From.FirstName, poll.Id, pollChat.PollId, voteNumber);
                 }
             }
         }

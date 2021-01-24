@@ -27,8 +27,10 @@ namespace Telegram.Bot.CovidPoll.Repositories
 
         public Task<bool> CheckIfAlreadyVotedInAllAsync(long userId, ObjectId pollId)
         {
-            return mongoDb.Polls.Find(p =>
-                p.Id == pollId && p.ChatPolls.Any(cp => cp.PollAnswers.Any(pa => pa.UserId == userId))).AnyAsync();
+            return mongoDb.Polls
+                .Find(p => p.Id == pollId && p.ChatPolls
+                    .Any(cp => cp.PollAnswers.Any(pa => pa.UserId == userId)))
+                .AnyAsync();
         }
 
         public Task<bool> CheckIfAlreadyVotedAsync(long userId, ObjectId pollId, string pollChatId)
@@ -37,25 +39,30 @@ namespace Telegram.Bot.CovidPoll.Repositories
                 cp.PollId.Equals(pollChatId) && cp.PollAnswers.Any(pa => pa.UserId == userId))).AnyAsync();
         }
 
-        public Task<bool> CheckIfAlreadyVotedInNonPollAsync(long userId, ObjectId pollId, string pollChatId)
+        public Task<bool> CheckIfAlreadyVotedInNonPollAsync(long userId, ObjectId pollId, 
+            string pollChatId)
         {
             return mongoDb.Polls.Find(p => p.Id == pollId && p.ChatPolls.Any(cp =>
-                cp.PollId.Equals(pollChatId) && cp.NonPollAnswers.Any(pa => pa.UserId == userId))).AnyAsync();
+                    cp.PollId.Equals(pollChatId) && cp.NonPollAnswers.Any(pa => pa.UserId == userId)))
+                .AnyAsync();
         }
 
-        public async Task<bool> CheckIfAlreadyVotedInPollOrNonPollAsync(long userId, ObjectId pollId, string pollChatId)
+        public async Task<bool> CheckIfAlreadyVotedInPollOrNonPollAsync(long userId, ObjectId pollId, 
+            string pollChatId)
         {
             var poll = await mongoDb.Polls.Find(p => p.Id == pollId && p.ChatPolls.Any(cp =>
-                cp.PollId.Equals(pollChatId) && cp.PollAnswers.Any(pa => pa.UserId == userId))).AnyAsync();
+                    cp.PollId.Equals(pollChatId) && cp.PollAnswers.Any(pa => pa.UserId == userId)))
+                .AnyAsync();
 
             var nonPoll = await mongoDb.Polls.Find(p => p.Id == pollId && p.ChatPolls.Any(cp =>
-                cp.PollId.Equals(pollChatId) && cp.NonPollAnswers.Any(np => np.UserId == userId))).AnyAsync();
+                    cp.PollId.Equals(pollChatId) && cp.NonPollAnswers.Any(np => np.UserId == userId)))
+                .AnyAsync();
 
             return poll | nonPoll;
         }
 
         public Task AddVoteAsync(long userId, string username, string userFirstName, 
-                                 ObjectId pollId, string pollTelegramId, int vote)
+            ObjectId pollId, string pollTelegramId, int vote)
         {
             var pollAnswers = new Db.PollAnswer()
             {
@@ -64,7 +71,8 @@ namespace Telegram.Bot.CovidPoll.Repositories
                 Username = username,
                 UserFirstName = userFirstName
             };
-            return mongoDb.Polls.UpdateOneAsync(p => p.Id == pollId && p.ChatPolls.Any(cp => cp.PollId.Equals(pollTelegramId)),
+            return mongoDb.Polls.UpdateOneAsync(p => p.Id == pollId && p.ChatPolls
+                .Any(cp => cp.PollId.Equals(pollTelegramId)), 
                 Builders<Poll>.Update.Push(p => p.ChatPolls[-1].PollAnswers, pollAnswers));
         }
 
@@ -72,7 +80,8 @@ namespace Telegram.Bot.CovidPoll.Repositories
         {
             return mongoDb.Polls.UpdateOneAsync(
                 p => p.Id == pollId && p.ChatPolls.Any(cp => cp.PollId.Equals(pollTelegramId)),
-                Builders<Poll>.Update.PullFilter(p => p.ChatPolls[-1].PollAnswers, cp => cp.UserId == userId));
+                Builders<Poll>.Update
+                .PullFilter(p => p.ChatPolls[-1].PollAnswers, cp => cp.UserId == userId));
         }
 
         public async Task<PollChat> FindLatestByChatIdAsync(long chatId)
@@ -84,12 +93,14 @@ namespace Telegram.Bot.CovidPoll.Repositories
         public async Task UpdateLastCommandDateAsync(long chatId, DateTime date)
         {
             var poll = await pollRepository.FindLatestWithoutChatsAsync();
-            await mongoDb.Polls.UpdateOneAsync(p => p.Id == poll.Id && p.ChatPolls.Any(cp => cp.ChatId == chatId), 
-                Builders<Poll>.Update.Set(p => p.ChatPolls[-1].LastCommandDate, date));
+
+            await mongoDb.Polls
+                .UpdateOneAsync(p => p.Id == poll.Id && p.ChatPolls.Any(cp => cp.ChatId == chatId), 
+                    Builders<Poll>.Update.Set(p => p.ChatPolls[-1].LastCommandDate, date));
         }
 
         public Task AddNonPollVoteAsync(long userId, string username, string userFirstName, 
-                                        ObjectId pollId, string pollTelegramId, int voteNumber)
+            ObjectId pollId, string pollTelegramId, int voteNumber)
         {
             var nonPollAnswers = new Db.NonPollAnswer()
             {
@@ -98,7 +109,8 @@ namespace Telegram.Bot.CovidPoll.Repositories
                 UserFirstName = userFirstName,
                 VoteNumber = voteNumber
             };
-            return mongoDb.Polls.UpdateOneAsync(p => p.Id == pollId && p.ChatPolls.Any(cp => cp.PollId.Equals(pollTelegramId)),
+            return mongoDb.Polls.UpdateOneAsync(p => p.Id == pollId && p.ChatPolls
+                .Any(cp => cp.PollId.Equals(pollTelegramId)),
                 Builders<Poll>.Update.Push(p => p.ChatPolls[-1].NonPollAnswers, nonPollAnswers));
         }
 
@@ -106,7 +118,8 @@ namespace Telegram.Bot.CovidPoll.Repositories
         {
             return mongoDb.Polls.UpdateOneAsync(
                 p => p.Id == pollId && p.ChatPolls.Any(cp => cp.PollId.Equals(pollTelegramId)),
-                Builders<Poll>.Update.PullFilter(p => p.ChatPolls[-1].NonPollAnswers, cp => cp.UserId == userId));
+                Builders<Poll>.Update
+                .PullFilter(p => p.ChatPolls[-1].NonPollAnswers, cp => cp.UserId == userId));
         }
     }
 }

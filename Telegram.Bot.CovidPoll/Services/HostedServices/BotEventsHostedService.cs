@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Handlers;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 
-namespace Telegram.Bot.CovidPoll.Services
+namespace Telegram.Bot.CovidPoll.Services.HostedServices
 {
     public class BotEventsHostedService : BackgroundService
     {

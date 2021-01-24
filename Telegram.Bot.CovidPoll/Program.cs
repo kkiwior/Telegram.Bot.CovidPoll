@@ -9,6 +9,7 @@ using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services;
+using Telegram.Bot.CovidPoll.Services.HostedServices;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll
@@ -58,6 +59,8 @@ namespace Telegram.Bot.CovidPoll
                      services.AddSingleton<IBotPollResultSenderService, BotPollResultSenderService>();
                      services.AddSingleton<ICovidDownloadingService, CovidDownloadingService>();
                      services.AddSingleton<ITaskDelayHelper, TaskDelayHelper>();
+                     services.AddSingleton<IPredictionsResultService, PredictionsResultService>();
+                     services.AddSingleton<IBotPollSenderService, BotPollSenderService>();
                      services.AddHostedService<CovidTrackingHostedService>();
                      services.AddHostedService<BotEventsHostedService>();
                      services.AddHostedService<BotPollSenderHostedService>();

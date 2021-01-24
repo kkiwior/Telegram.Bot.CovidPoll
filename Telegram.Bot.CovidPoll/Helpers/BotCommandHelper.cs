@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Models;
-using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Helpers
@@ -10,10 +9,12 @@ namespace Telegram.Bot.CovidPoll.Helpers
     public class BotCommandHelper : IBotCommandHelper
     {
         private readonly IBotClientService botClientService;
+
         public BotCommandHelper(IBotClientService botClientService)
         {
             this.botClientService = botClientService;
         }
+
         public enum BotCommands
         {
             start,
@@ -26,7 +27,8 @@ namespace Telegram.Bot.CovidPoll.Helpers
             unvote
         };
 
-        public async Task<BotCommandModel> CheckCommandIsCorrectAsync(BotCommands commandType, string command)
+        public async Task<BotCommandModel> CheckCommandIsCorrectAsync(BotCommands commandType, 
+            string command)
         {
             if (command == null)
                 return new BotCommandModel() {CommandCorrect = false};

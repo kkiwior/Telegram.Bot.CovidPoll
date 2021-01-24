@@ -13,6 +13,7 @@ namespace Telegram.Bot.CovidPoll.Db
         public List<NonPollAnswer> NonPollAnswers { get; set; } = new List<NonPollAnswer>();
         public DateTime LastCommandDate { get; set; } = DateTime.UtcNow;
     }
+
     public class PollAnswer
     {
         public long UserId { get; set; }
@@ -20,6 +21,7 @@ namespace Telegram.Bot.CovidPoll.Db
         public string UserFirstName { get; set; }
         public int VoteId { get; set; }
     }
+
     public class NonPollAnswer
     {
         public long UserId { get; set; }

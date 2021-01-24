@@ -26,7 +26,8 @@ namespace Telegram.Bot.CovidPoll.Services
             //    return new CovidCasesModel()
             //    {
             //        Date = covids.FirstOrDefault().Date.Date,
-            //        Cases = Math.Abs(covids.FirstOrDefault().TotalCases - covids.LastOrDefault().TotalCases)
+            //        Cases = Math.Abs(covids.FirstOrDefault().TotalCases - covids.LastOrDefault()
+            //          .TotalCases)
             //    };
             //}
             //throw new CovidCalculateException();
@@ -37,7 +38,7 @@ namespace Telegram.Bot.CovidPoll.Services
 
             return new CovidCasesModel()
             {
-                Date = covids.Date.Date,
+                Date = covids.Date,
                 Cases = covids.NewCases
             };
         }

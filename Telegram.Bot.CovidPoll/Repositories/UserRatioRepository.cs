@@ -33,7 +33,8 @@ namespace Telegram.Bot.CovidPoll.Repositories
 
         public Task<UserRatio> GetByUserIdAsync(long userId, long chatId)
         {
-            return mongoDb.UsersRatio.Find(ur => ur.ChatId == chatId && ur.UserId == userId).FirstOrDefaultAsync();
+            return mongoDb.UsersRatio.Find(ur => ur.ChatId == chatId && ur.UserId == userId)
+                .FirstOrDefaultAsync();
         }
     }
 }

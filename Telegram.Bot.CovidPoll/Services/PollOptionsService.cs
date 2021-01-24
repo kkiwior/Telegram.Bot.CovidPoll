@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Exceptions;
-using Telegram.Bot.CovidPoll.Repositories;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 
@@ -15,8 +14,8 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IPollRepository pollRepository;
         private readonly ICovidCalculateService covidCalculateService;
 
-        public PollOptionsService(IPollRepository pollRepository,
-                                  ICovidCalculateService covidCalculateService)
+        public PollOptionsService(IPollRepository pollRepository, 
+            ICovidCalculateService covidCalculateService)
         {
             this.pollRepository = pollRepository;
             this.covidCalculateService = covidCalculateService;
@@ -30,7 +29,7 @@ namespace Telegram.Bot.CovidPoll.Services
                 if (cases.Date.Date != date.Date.Date)
                     return null;
 
-                var pollOptionsInDb = await pollRepository.GetByDateAsync(date.Date);
+                var pollOptionsInDb = await pollRepository.GetByDateAsync(date);
                 if (pollOptionsInDb != null)
                     return pollOptionsInDb;
 

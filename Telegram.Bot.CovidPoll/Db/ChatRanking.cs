@@ -13,6 +13,7 @@ namespace Telegram.Bot.CovidPoll.Db
         public List<ChatWinner> Winners { get; set; } = new List<ChatWinner>();
         public DateTime LastCommandDate { get; set; } = DateTime.UtcNow;
     }
+
     public class ChatWinner
     {
         public long UserId { get; set; }
