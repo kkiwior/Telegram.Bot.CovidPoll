@@ -4,11 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Abstractions;
 using Telegram.Bot.CovidPoll.Db;
-using Telegram.Bot.CovidPoll.Exceptions;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Models;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
-using Telegram.Bot.CovidPoll.Services.Models;
 
 namespace Telegram.Bot.CovidPoll.Helpers
 {
@@ -90,7 +88,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
                         casesRatio.Add(new PredictCovidCasesModel
                         {
                             VoteWithoutRatio = userVote.VoteNumber,
-                            Vote = userVote.VoteNumber * vote.Ratio,
+                            Vote = userVote.VoteNumber,
                             Ratio = 0
                         });
                     }

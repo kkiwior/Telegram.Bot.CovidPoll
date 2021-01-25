@@ -43,8 +43,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
         #endregion
 
         [Theory]
-        [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), 
-            MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
+        [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
         public async Task ExecuteAsync_DownloadCovidByJsonAsyncReturnsTrue_ShouldSetDateAsExpected(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
         {
             //Arrange
@@ -92,8 +91,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
         }
 
         [Theory]
-        [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult),
-            MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
+        [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
         public async Task ExecuteAsync_DownloadCovidByJsonAsyncReturnsFalseFetchDelayIs2Hours_ShouldDelayFor20Minutes(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
         {
             //Arrange
@@ -139,8 +137,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
         }
 
         [Theory]
-        [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult),
-            MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
+        [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
         public async Task ExecuteAsync_DownloadCovidByJsonAsyncReturnsFalseFetchDelayIs3Hours_ShouldDelayFor3Hours(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
         {
             //Arrange
@@ -186,8 +183,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
         }
 
         [Theory]
-        [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult),
-            MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
+        [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
         public async Task ExecuteAsync_DownloadCovidByJsonAsyncThrowsCovidParseException_ShouldStopApplication(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
         {
             //Arrange

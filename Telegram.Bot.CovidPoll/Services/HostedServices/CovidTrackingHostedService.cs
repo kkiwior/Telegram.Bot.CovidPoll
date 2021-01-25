@@ -59,7 +59,7 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
                             FetchDate = FetchDate.AddDays(1);
                             log.LogInformation(
                                 $"[{nameof(CovidTrackingHostedService)}] - Data successfully downloaded" +
-                                "or is up to date");
+                                " or is up to date");
                         }
                         else
                         {
