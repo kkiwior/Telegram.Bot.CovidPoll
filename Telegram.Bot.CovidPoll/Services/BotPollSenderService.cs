@@ -21,13 +21,13 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IQueueService queueService;
         private readonly IBotMessageHelper botMessageHelper;
         private readonly ILogger<BotPollSenderService> log;
-        private readonly ITaskDelayHelper taskDelayHelper;
+        private readonly ITaskDelayProvider taskDelayProvider;
 
         public BotPollSenderService(IBotClientService botClientService,
             IChatRepository chatRepository, IPollRepository pollRepository,
             IPollOptionsService pollOptionsService, IPollChatRepository pollChatRepository,
             IQueueService queueService, IBotMessageHelper botMessageHelper, 
-            ILogger<BotPollSenderService> log, ITaskDelayHelper taskDelayHelper)
+            ILogger<BotPollSenderService> log, ITaskDelayProvider taskDelayProvider)
         {
             this.botClientService = botClientService;
             this.chatRepository = chatRepository;
@@ -37,7 +37,7 @@ namespace Telegram.Bot.CovidPoll.Services
             this.queueService = queueService;
             this.botMessageHelper = botMessageHelper;
             this.log = log;
-            this.taskDelayHelper = taskDelayHelper;
+            this.taskDelayProvider = taskDelayProvider;
         }
 
         public async Task<bool> SendPolls(CancellationToken stoppingToken)
@@ -70,7 +70,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         }
                         catch (Exception) { }
 
-                        await taskDelayHelper.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                        await taskDelayProvider.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
                 });
                 log.LogInformation($"[{nameof(BotPollSenderService)}] - Polls have been sent.");
@@ -110,7 +110,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         }
                         catch (Exception) { }
 
-                        await taskDelayHelper.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                        await taskDelayProvider.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
                 });
             }

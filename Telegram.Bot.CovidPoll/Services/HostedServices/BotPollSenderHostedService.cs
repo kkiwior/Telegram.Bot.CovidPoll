@@ -14,16 +14,16 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
     {
         private readonly IOptions<BotSettings> botSettings;
         private readonly IBotPollResultSenderService botPollResultSender;
-        private readonly ITaskDelayHelper taskDelayHelper;
+        private readonly ITaskDelayProvider taskDelayProvider;
         private readonly IBotPollSenderService botPollSenderService;
 
         public BotPollSenderHostedService(IOptions<BotSettings> botSettings, 
-            IBotPollResultSenderService botPollResultSender, ITaskDelayHelper taskDelayHelper, 
+            IBotPollResultSenderService botPollResultSender, ITaskDelayProvider taskDelayProvider, 
             IBotPollSenderService botPollSenderService)
         {
             this.botSettings = botSettings;
             this.botPollResultSender = botPollResultSender;
-            this.taskDelayHelper = taskDelayHelper;
+            this.taskDelayProvider = taskDelayProvider;
             this.botPollSenderService = botPollSenderService;
         }
 
@@ -52,7 +52,7 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
                     }
                     else
                     {
-                        await taskDelayHelper.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                        await taskDelayProvider.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                     }
                 }
                 else if (DateTime.UtcNow >= PollsEnd)
@@ -62,7 +62,7 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
 
                     botPollResultSender.SendPredictionsToChats();
                 }
-                await taskDelayHelper.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                await taskDelayProvider.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }
         }
     }

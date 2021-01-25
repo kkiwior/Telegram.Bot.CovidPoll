@@ -5,7 +5,7 @@ using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 
 namespace Telegram.Bot.CovidPoll.Helpers
 {
-    public class TaskDelayHelper : ITaskDelayHelper
+    public class TaskDelayProvider : ITaskDelayProvider
     {
         public Task Delay(TimeSpan time, CancellationToken stoppingToken)
         {

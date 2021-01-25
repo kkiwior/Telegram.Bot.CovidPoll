@@ -18,17 +18,20 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
         private readonly IHostApplicationLifetime applicationLifetime;
         private readonly ILogger<CovidTrackingHostedService> log;
         private readonly ICovidDownloadingService covidDownloadingService;
-        private readonly ITaskDelayHelper taskDelayHelper;
+        private readonly ITaskDelayProvider taskDelayProvider;
+        private readonly IDateProvider dateProvider;
 
         public CovidTrackingHostedService(IOptions<CovidTrackingSettings> covidTrackingSettings, 
             IHostApplicationLifetime applicationLifetime, ILogger<CovidTrackingHostedService> log, 
-            ICovidDownloadingService covidDownloadingService, ITaskDelayHelper taskDelayHelper)
+            ICovidDownloadingService covidDownloadingService, ITaskDelayProvider taskDelayProvider,
+            IDateProvider dateProvider)
         {
             this.covidTrackingSettings = covidTrackingSettings;
             this.applicationLifetime = applicationLifetime;
             this.log = log;
             this.covidDownloadingService = covidDownloadingService;
-            this.taskDelayHelper = taskDelayHelper;
+            this.taskDelayProvider = taskDelayProvider;
+            this.dateProvider = dateProvider;
         }
 
         private DateTimeOffset FetchDate { get; set; }
@@ -46,7 +49,7 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (DateTimeOffset.UtcNow >= FetchDate)
+                if (dateProvider.DateTimeOffsetUtcNow() >= FetchDate)
                 {
                     try
                     {
@@ -63,10 +66,10 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
                             log.LogError(
                                 @$"[{nameof(CovidTrackingHostedService)}] - Problem with downloading data");
 
-                            if (DateTimeOffset.UtcNow >= FetchDate.AddHours(3))
-                                await taskDelayHelper.Delay(TimeSpan.FromHours(3), stoppingToken);
+                            if (dateProvider.DateTimeOffsetUtcNow() >= FetchDate.AddHours(3))
+                                await taskDelayProvider.Delay(TimeSpan.FromHours(3), stoppingToken);
                             else
-                                await taskDelayHelper.Delay(TimeSpan.FromMinutes(20), stoppingToken);
+                                await taskDelayProvider.Delay(TimeSpan.FromMinutes(20), stoppingToken);
                         }
                     }
                     catch (CovidParseException ex)
@@ -75,7 +78,7 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
                         applicationLifetime.StopApplication();
                     }
                 }
-                await taskDelayHelper.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                await taskDelayProvider.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }
         }
     }

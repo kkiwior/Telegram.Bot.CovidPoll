@@ -20,7 +20,7 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IUserRatioRepository userRatioRepository;
         private readonly ILogger<BotPollResultSenderService> log;
         private readonly IPredictionsResultService predictionsResultService;
-        private readonly ITaskDelayHelper taskDelayHelper;
+        private readonly ITaskDelayProvider taskDelayProvider;
 
         public BotPollResultSenderService(IQueueService queueService, IChatRepository chatRepository, 
             IBotClientService botClientService, IPollRepository pollRepository, 
@@ -28,7 +28,7 @@ namespace Telegram.Bot.CovidPoll.Services
             IPollChatRankingRepository pollChatRankingRepository, 
             IPollVotesConverterHelper pollVotesConverterHelper, IUserRatioRepository userRatioRepository,
             ILogger<BotPollResultSenderService> log, IPredictionsResultService predictionsResultService,
-            ITaskDelayHelper taskDelayHelper)
+            ITaskDelayProvider taskDelayProvider)
         {
             this.queueService = queueService;
             this.chatRepository = chatRepository;
@@ -40,7 +40,7 @@ namespace Telegram.Bot.CovidPoll.Services
             this.userRatioRepository = userRatioRepository;
             this.log = log;
             this.predictionsResultService = predictionsResultService;
-            this.taskDelayHelper = taskDelayHelper;
+            this.taskDelayProvider = taskDelayProvider;
         }
 
         public void SendPredictionsToChats()
@@ -80,7 +80,7 @@ namespace Telegram.Bot.CovidPoll.Services
                     }
                     catch (Exception) {}
 
-                    await taskDelayHelper.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                    await taskDelayProvider.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                 }
                 log.LogInformation(
                     $"[{nameof(BotPollResultSenderService)}] - All predictions have been sent.");
@@ -129,7 +129,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         }
                         catch (Exception) {}
 
-                        await taskDelayHelper.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                        await taskDelayProvider.Delay(TimeSpan.FromSeconds(1), stoppingToken);
                     }
 
                     log.LogInformation(
