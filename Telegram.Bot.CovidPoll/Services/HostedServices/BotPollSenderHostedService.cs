@@ -13,18 +13,20 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
     public class BotPollSenderHostedService : BackgroundService
     {
         private readonly IOptions<BotSettings> botSettings;
-        private readonly IBotPollResultSenderService botPollResultSender;
+        private readonly IBotPollResultSenderService botPollResultSenderService;
         private readonly ITaskDelayProvider taskDelayProvider;
         private readonly IBotPollSenderService botPollSenderService;
+        private readonly IDateProvider dateProvider;
 
         public BotPollSenderHostedService(IOptions<BotSettings> botSettings, 
-            IBotPollResultSenderService botPollResultSender, ITaskDelayProvider taskDelayProvider, 
-            IBotPollSenderService botPollSenderService)
+            IBotPollResultSenderService botPollResultSenderService, ITaskDelayProvider taskDelayProvider, 
+            IBotPollSenderService botPollSenderService, IDateProvider dateProvider)
         {
             this.botSettings = botSettings;
-            this.botPollResultSender = botPollResultSender;
+            this.botPollResultSenderService = botPollResultSenderService;
             this.taskDelayProvider = taskDelayProvider;
             this.botPollSenderService = botPollSenderService;
+            this.dateProvider = dateProvider;
         }
 
         private DateTimeOffset PollsStart { get; set; }
@@ -33,17 +35,20 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            PollsStart = DateTimeOffset.UtcNow
-                .ConvertUtcToPolishTime().Date.AddHours(botSettings.Value.PollsStartHour)
-                .ToUniversalTime();
+            var date = dateProvider.DateTimeOffsetUtcNow().ConvertUtcToPolishTime().Midnight();
 
-            PollsEnd = DateTimeOffset.UtcNow
-                .ConvertUtcToPolishTime().Date.AddHours(botSettings.Value.PollsEndHour)
-                .ToUniversalTime();
+            PollsStart = date.AddHours(botSettings.Value.PollsStartHour).ToUniversalTime();
+            PollsEnd = date.AddHours(botSettings.Value.PollsEndHour).ToUniversalTime();
 
+            await WorkerAsync(stoppingToken);
+        }
+
+        private async Task WorkerAsync(CancellationToken stoppingToken)
+        {
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (DateTime.UtcNow >= PollsStart && DateTime.UtcNow <= PollsEnd)
+                if (dateProvider.DateTimeOffsetUtcNow() >= PollsStart && 
+                    dateProvider.DateTimeOffsetUtcNow() <= PollsEnd)
                 {
                     var pollsResult = await botPollSenderService.SendPolls(stoppingToken);
                     if (pollsResult)
@@ -55,12 +60,12 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
                         await taskDelayProvider.Delay(TimeSpan.FromMinutes(5), stoppingToken);
                     }
                 }
-                else if (DateTime.UtcNow >= PollsEnd)
+                else if (dateProvider.DateTimeOffsetUtcNow() >= PollsEnd)
                 {
                     await botPollSenderService.StopPolls(stoppingToken);
                     PollsEnd = PollsEnd.AddDays(1);
 
-                    botPollResultSender.SendPredictionsToChats();
+                    botPollResultSenderService.SendPredictionsToChats();
                 }
                 await taskDelayProvider.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }

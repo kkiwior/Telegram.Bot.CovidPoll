@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Config;
 using Telegram.Bot.CovidPoll.Exceptions;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
 
@@ -23,22 +24,25 @@ namespace Telegram.Bot.CovidPoll.Services
         private readonly IHttpClientFactory httpClient;
         private readonly IHostApplicationLifetime applicationLifetime;
         private readonly IBotPollResultSenderService botPollResultSender;
+        private readonly IDateProvider dateProvider;
 
         public CovidDownloadingService(IOptions<CovidTrackingSettings> covidTrackingSettings, 
             ICovidRepository covidRepository, IHttpClientFactory httpClient, 
-            IHostApplicationLifetime applicationLifetime, IBotPollResultSenderService botPollResultSender)
+            IHostApplicationLifetime applicationLifetime, IBotPollResultSenderService botPollResultSender,
+            IDateProvider dateProvider)
         {
             this.covidTrackingSettings = covidTrackingSettings;
             this.covidRepository = covidRepository;
             this.httpClient = httpClient;
             this.applicationLifetime = applicationLifetime;
             this.botPollResultSender = botPollResultSender;
+            this.dateProvider = dateProvider;
         }
 
         public async Task<bool> DownloadCovidByJsonAsync()
         {
             var latestCovid = await covidRepository.FindLatestAsync();
-            if (latestCovid != null && DateTime.UtcNow.Date <= latestCovid.Date)
+            if (latestCovid != null && dateProvider.DateTimeUtcNow().Date <= latestCovid.Date)
                 return true;
 
             var httpClient = this.httpClient.CreateClient();

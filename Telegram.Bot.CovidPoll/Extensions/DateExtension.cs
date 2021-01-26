@@ -32,5 +32,10 @@ namespace Telegram.Bot.CovidPoll.Extensions
 
             return (DateTimeOffset)convertedDate;
         }
+
+        public static DateTimeOffset Midnight(this DateTimeOffset date)
+        {
+            return new DateTimeOffset(date.Year, date.Month, date.Day, 0, 0, 0, date.Offset);
+        }
     }
 }

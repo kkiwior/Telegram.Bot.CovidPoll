@@ -11,13 +11,15 @@ namespace Telegram.Bot.CovidPoll.xUnit.Fixtures
 
         public AppSettingsFixture()
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", false, true)
-                .Build();
+            //var config = new ConfigurationBuilder()
+            //    .SetBasePath(AppContext.BaseDirectory)
+            //    .AddJsonFile("appsettings.json", false, true)
+            //    .Build();
 
-            CovidTrackingSettings = Options.Create(config.GetSection("CovidTrackingSettings")
-                .Get<CovidTrackingSettings>());
+            CovidTrackingSettings = Options.Create(new CovidTrackingSettings() 
+            {
+                Url = "https://localhost"
+            });
         }
     }
 }

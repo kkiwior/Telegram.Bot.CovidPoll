@@ -38,8 +38,8 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            FetchDate = DateTimeOffset.UtcNow
-                .ConvertUtcToPolishTime().Date.AddHours(covidTrackingSettings.Value.FetchDataHour)
+            FetchDate = dateProvider.DateTimeOffsetUtcNow().ConvertUtcToPolishTime().Midnight()
+                .AddHours(covidTrackingSettings.Value.FetchDataHour)
                 .ToUniversalTime();
 
             await WorkerAsync(stoppingToken);

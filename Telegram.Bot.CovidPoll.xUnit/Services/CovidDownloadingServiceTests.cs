@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Exceptions;
+using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Repositories.Interfaces;
 using Telegram.Bot.CovidPoll.Services;
 using Telegram.Bot.CovidPoll.Services.Interfaces;
@@ -25,6 +26,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
         private readonly Mock<IHttpClientFactory> httpClientFactoryMock;
         private readonly Mock<IHostApplicationLifetime> applicationLifetimeMock;
         private readonly Mock<IBotPollResultSenderService> botPollResultSenderMock;
+        private readonly Mock<IDateProvider> dateProviderMock;
         private readonly string httpMessageContent = 
             "{\"features\": [{\"attributes\":{\"Data\": 1611221413886,\"ZAKAZENIA_DZIENNE\": 7152}}]}";
         private readonly DateTime date = 
@@ -39,10 +41,11 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
             this.httpClientFactoryMock = new Mock<IHttpClientFactory>();
             this.applicationLifetimeMock = new Mock<IHostApplicationLifetime>();
             this.botPollResultSenderMock = new Mock<IBotPollResultSenderService>();
+            this.dateProviderMock = new Mock<IDateProvider>();
 
             this.serviceUnderTests = new CovidDownloadingService(appSettingsFixture.CovidTrackingSettings,
                 covidRepositoryMock.Object, httpClientFactoryMock.Object, applicationLifetimeMock.Object,
-                botPollResultSenderMock.Object);
+                botPollResultSenderMock.Object, dateProviderMock.Object);
         }
         #endregion
 
@@ -50,6 +53,8 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
         public async Task DownloadCovidByJsonAsync_StatusCodeIsOkAndCasesInDbAreFromYesterday_ShouldAddToDbAndReturnTrueAndSendResultsToChats()
         {
             //Arrange
+            dateProviderMock.Setup(d => d.DateTimeUtcNow()).Returns(new DateTime(2021, 1, 21));
+
             covidRepositoryMock.Setup(c => c.FindLatestAsync())
                 .ReturnsAsync(new Covid() { Date = date.AddDays(-1) });
 
@@ -93,6 +98,8 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
         public async Task DownloadCovidByJsonAsync_StatusCodeIsOkAndCasesInDbAreNotUpToDateAndJsonDataIsInvalid_ShouldThrowCovidCalculateException()
         {
             //Arrange
+            dateProviderMock.Setup(d => d.DateTimeUtcNow()).Returns(new DateTime(2021, 1, 21));
+
             covidRepositoryMock.Setup(c => c.FindLatestAsync())
                 .ReturnsAsync(new Covid() { Date = date.AddDays(-1) });
 
@@ -133,8 +140,10 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
         public async Task DownloadCovidByJsonAsync_CasesInDbAreUpToDate_ShouldReturnTrue()
         {
             //Arrange
+            dateProviderMock.Setup(d => d.DateTimeUtcNow()).Returns(new DateTime(2021, 1, 21));
+
             covidRepositoryMock.Setup(c => c.FindLatestAsync())
-                .ReturnsAsync(new Covid() { Date = DateTime.UtcNow });
+                .ReturnsAsync(new Covid() { Date = new DateTime(2021, 1, 21) });
 
             //Act
             var result = await serviceUnderTests.DownloadCovidByJsonAsync();
@@ -154,6 +163,8 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
         public async Task DownloadCovidByJsonAsync_StatusCodeIsNotOkAndCasesInDbAreNotUpToDate_ShouldReturnFalse()
         {
             //Arrange
+            dateProviderMock.Setup(d => d.DateTimeUtcNow()).Returns(new DateTime(2021, 1, 21));
+
             covidRepositoryMock.Setup(c => c.FindLatestAsync())
                 .ReturnsAsync(new Covid() { Date = date.AddDays(-1) });
 
@@ -195,6 +206,8 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services
         public async Task DownloadCovidByJsonAsync_StatusCodeIsOkAndCasesInDbAreNotUpToDateAndCasesOnPageAreNotUpToDate_ShouldReturnFalse()
         {
             //Arrange
+            dateProviderMock.Setup(d => d.DateTimeUtcNow()).Returns(new DateTime(2021, 1, 21));
+
             covidRepositoryMock.Setup(c => c.FindLatestAsync())
                 .ReturnsAsync(new Covid() { Date = date.AddDays(-1) });
 
