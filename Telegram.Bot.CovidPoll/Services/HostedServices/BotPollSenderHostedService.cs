@@ -48,7 +48,7 @@ namespace Telegram.Bot.CovidPoll.Services.HostedServices
             while (!stoppingToken.IsCancellationRequested)
             {
                 if (dateProvider.DateTimeOffsetUtcNow() >= PollsStart && 
-                    dateProvider.DateTimeOffsetUtcNow() <= PollsEnd)
+                    dateProvider.DateTimeOffsetUtcNow() < PollsEnd)
                 {
                     var pollsResult = await botPollSenderService.SendPolls(stoppingToken);
                     if (pollsResult)

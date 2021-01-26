@@ -44,7 +44,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
 
         [Theory]
         [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
-        public async Task ExecuteAsync_DownloadCovidByJsonAsyncReturnsTrue_ShouldSetDateAsExpected(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
+        public async Task WorkerAsync_DownloadCovidByJsonAsyncReturnsTrue_ShouldSetDateAsExpected(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
         {
             //Arrange
             dateProviderMock.Setup(d => d.DateTimeOffsetUtcNow()).Returns(fetchDate);
@@ -92,7 +92,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
 
         [Theory]
         [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
-        public async Task ExecuteAsync_DownloadCovidByJsonAsyncReturnsFalseFetchDelayIs2Hours_ShouldDelayFor20Minutes(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
+        public async Task WorkerAsync_DownloadCovidByJsonAsyncReturnsFalseFetchDelayIs2Hours_ShouldDelayFor20Minutes(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
         {
             //Arrange
             dateProviderMock.Setup(d => d.DateTimeOffsetUtcNow()).Returns(fetchDate.AddHours(2));
@@ -138,7 +138,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
 
         [Theory]
         [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
-        public async Task ExecuteAsync_DownloadCovidByJsonAsyncReturnsFalseFetchDelayIs3Hours_ShouldDelayFor3Hours(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
+        public async Task WorkerAsync_DownloadCovidByJsonAsyncReturnsFalseFetchDelayIs3Hours_ShouldDelayFor3Hours(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
         {
             //Arrange
             dateProviderMock.Setup(d => d.DateTimeOffsetUtcNow()).Returns(fetchDate.AddHours(3));
@@ -184,7 +184,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
 
         [Theory]
         [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
-        public async Task ExecuteAsync_DownloadCovidByJsonAsyncThrowsCovidParseException_ShouldStopApplication(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
+        public async Task WorkerAsync_DownloadCovidByJsonAsyncThrowsCovidParseException_ShouldStopApplication(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
         {
             //Arrange
             dateProviderMock.Setup(d => d.DateTimeOffsetUtcNow()).Returns(fetchDate);
