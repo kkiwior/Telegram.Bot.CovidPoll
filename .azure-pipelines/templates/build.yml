@@ -8,7 +8,6 @@ jobs:
         repository: '$(RepositoryName)'
         command: 'build'
         Dockerfile: '**/Dockerfile'
-        arguments: '$(BuildArgs)'
 
     - task: Docker@2
       inputs:

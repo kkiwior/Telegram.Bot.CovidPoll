@@ -3,4 +3,3 @@ variables:
   TestsPath: 'Telegram.Bot.CovidPoll.xUnit/Telegram.Bot.CovidPoll.xUnit.csproj'
   TestsResultPath: '/src/Telegram.Bot.CovidPoll.xUnit/TestResults'
   VmImage: 'ubuntu-18.04'
-  BuildArgs: '--build-arg BotSettings__Token=$(BotSettings__Token) --build-arg BotSettings__AdminUserId=$(BotSettings__AdminUserId) --build-arg MongoSettings__ConnectionString=$(MongoSettings__ConnectionString) --build-arg MongoSettings__DbName=$(MongoSettings__DbName) --build-arg CovidTrackingSettings_Url=$(CovidTrackingSettings_Url) --build-arg Seq__ApiKey=$(Seq__ApiKey) --build-arg Seq__ServerUrl=$(Seq__ServerUrl)'
