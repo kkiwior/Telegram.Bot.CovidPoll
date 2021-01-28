@@ -15,22 +15,6 @@ FROM build AS publish
 RUN dotnet publish "Telegram.Bot.CovidPoll.csproj" -c Release -o /app/publish
 
 FROM base AS final
-ARG BotSettings__Token
-ARG BotSettings__AdminUserId
-ARG MongoSettings__ConnectionString
-ARG MongoSettings__DbName
-ARG CovidTrackingSettings_Url
-ARG Seq__ApiKey
-ARG Seq__ServerUrl
-
-ENV BotSettings__Token $BotSettings__Token
-ENV BotSettings__AdminUserId $BotSettings__AdminUserId
-ENV MongoSettings__ConnectionString $MongoSettings__ConnectionString
-ENV MongoSettings__DbName $MongoSettings__DbName
-ENV CovidTrackingSettings_Url $CovidTrackingSettings_Url
-ENV Seq__ApiKey $Seq__ApiKey
-ENV Seq__ServerUrl $Seq__ServerUrl
-
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "Telegram.Bot.CovidPoll.dll"]
