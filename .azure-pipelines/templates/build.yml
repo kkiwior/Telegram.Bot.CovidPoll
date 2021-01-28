@@ -1,0 +1,17 @@
+jobs:
+  - job: Build
+    displayName: Execute build and push to DockerHub
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'DockerHub'
+        repository: '$(RepositoryName)'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
+        arguments: --build-arg $(BuildArgs)
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'DockerHub'
+        repository: '$(RepositoryName)'
+        command: 'push'

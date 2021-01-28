@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Telegram.Bot.CovidPoll.xUnit": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

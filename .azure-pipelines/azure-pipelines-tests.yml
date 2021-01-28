@@ -1,0 +1,25 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - README.md
+
+variables:
+  - template: templates/variables.yml
+
+stages:
+  - stage: UnitTest
+    displayName: Unit tests
+    jobs:
+      - template: templates/xunit.yml
+        parameters:
+           ImageName: 'xunittests:$(Build.BuildId)'

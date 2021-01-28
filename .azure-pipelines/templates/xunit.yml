@@ -1,0 +1,22 @@
+parameters:
+  ImageName: ''
+
+jobs:
+  - job: XUnitTest
+    displayName: Execute XUnit tests
+    pool:
+      vmImage: $(VmImage)
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+          docker build -f ./DockerfileTests -t ${{ parameters.ImageName }} .
+          docker run -v $(System.DefaultWorkingDirectory)/testresults:$(TestsResultPath) ${{ parameters.ImageName }}
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '**/*.trx'
+        searchFolder: '$(System.DefaultWorkingDirectory)/testresults'
+        testRunTitle: 'Publish test results'
