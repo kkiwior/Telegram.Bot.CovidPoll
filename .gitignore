@@ -487,3 +487,5 @@ MigrationBackup/
 docker-compose.yml
 appsettings.Production.json
 appsettings.Development.json
+
+Telegram.Bot.CovidPoll.XUnit.Integration/appsettings.json

@@ -17,6 +17,6 @@ jobs:
     - task: PublishTestResults@2
       inputs:
         testResultsFormat: 'VSTest'
-        testResultsFiles: '**/*.trx'
+        testResultsFiles: 'unittests.trx'
         searchFolder: '$(System.DefaultWorkingDirectory)/testresults'
         testRunTitle: 'Publish test results'

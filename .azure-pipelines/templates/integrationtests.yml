@@ -1,0 +1,24 @@
+jobs:
+  - job: IntegrationTests
+    displayName: Execute integration tests
+    pool:
+      vmImage: $(VmImage)
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+          $env:ROOT_USERNAME="$(ROOT_USERNAME)"; 
+          $env:ROOT_PASSWORD="$(ROOT_PASSWORD)";
+          $env:ConnectionString="$(ConnectionString)";
+          $env:DbName="$(DbName)";
+          $env:DefaultWorkingDirectory="$(System.DefaultWorkingDirectory)";
+          $env:TestsResultPath="$(IntegrationTestsResultPath)"; 
+          docker-compose -f docker-compose-integration-tests.yml up --abort-on-container-exit
+
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: 'integrationtests.trx'
+        searchFolder: '$(System.DefaultWorkingDirectory)/testresults'
+        testRunTitle: 'Publish test results'

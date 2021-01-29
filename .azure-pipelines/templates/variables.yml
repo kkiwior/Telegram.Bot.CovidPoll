@@ -2,4 +2,5 @@ variables:
   ProjectPath: 'Telegram.Bot.CovidPoll/Telegram.Bot.CovidPoll.csproj'
   TestsPath: 'Telegram.Bot.CovidPoll.xUnit/Telegram.Bot.CovidPoll.xUnit.csproj'
   TestsResultPath: '/src/Telegram.Bot.CovidPoll.xUnit/TestResults'
+  IntegrationTestsResultPath: '/src/Telegram.Bot.CovidPoll.xUnit.Integration/TestResults'
   VmImage: 'ubuntu-18.04'

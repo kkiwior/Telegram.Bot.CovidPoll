@@ -29,3 +29,8 @@ stages:
       - template: templates/xunit.yml
         parameters:
            ImageName: 'xunittests:$(Build.BuildId)'
+
+  - stage: IntegrationTests
+    displayName: Integration tests
+    jobs:
+      - template: templates/integrationtests.yml
