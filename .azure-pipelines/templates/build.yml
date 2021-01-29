@@ -6,11 +6,7 @@ jobs:
       inputs:
         containerRegistry: 'DockerHub'
         repository: '$(RepositoryName)'
-        command: 'build'
+        command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
-
-    - task: Docker@2
-      inputs:
-        containerRegistry: 'DockerHub'
-        repository: '$(RepositoryName)'
-        command: 'push'
+        tags: 'latest'
+        addPipelineData: false
