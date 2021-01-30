@@ -37,6 +37,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
         }
         #endregion
 
+        #pragma warning disable xUnit1026
         [Theory]
         [MemberData(nameof(BotPollSenderHostedServiceTestsMemberData.GetDatesWithExpectedResults), MemberType = typeof(BotPollSenderHostedServiceTestsMemberData))]
         public async Task WorkerAsync_CurrentDateIsInPollsStartAndPollsEndRangeAndPollsResultIsTrue_ShouldAddOneDayToPollsStart(DateTimeOffset pollsStartDate, DateTimeOffset pollsEndDate, DateTimeOffset expectedPollsStartDate, DateTimeOffset notExpectedPollsEndDate)

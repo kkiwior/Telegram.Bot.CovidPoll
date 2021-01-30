@@ -93,6 +93,7 @@ namespace Telegram.Bot.CovidPoll.Repositories
                 await mongoDb.ChatsRankings.ReplaceOneAsync(c => c.ChatId == chatId, ranking);
             }
         }
+
         public Task<ChatRanking> GetChatRankingAsync(long chatId)
         {
             return mongoDb.ChatsRankings.Find(c => c.ChatId == chatId).FirstOrDefaultAsync();

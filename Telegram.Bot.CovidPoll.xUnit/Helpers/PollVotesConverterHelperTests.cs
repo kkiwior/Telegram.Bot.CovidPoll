@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using FluentAssertions;
+using Moq;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Helpers
             var result = helperUnderTests.ConvertPollVotes(pollChat, covidToday);
 
             //Assert
-            Assert.Equal(result, expectedResult);
+            expectedResult.Should().BeEquivalentTo(result);
         }
 
         [Theory]

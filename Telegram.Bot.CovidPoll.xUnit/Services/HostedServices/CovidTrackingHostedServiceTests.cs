@@ -90,6 +90,7 @@ namespace Telegram.Bot.CovidPoll.xUnit.Services.HostedServices
             applicationLifetimeMock.VerifyNoOtherCalls();
         }
 
+        #pragma warning disable xUnit1026
         [Theory]
         [MemberData(nameof(CovidTrackingHostedServiceTestsMemberData.GetFetchDateWithExpectedResult), MemberType = typeof(CovidTrackingHostedServiceTestsMemberData))]
         public async Task WorkerAsync_DownloadCovidByJsonAsyncReturnsFalseFetchDelayIs2Hours_ShouldDelayFor20Minutes(DateTimeOffset fetchDate, DateTimeOffset expectedDate)
