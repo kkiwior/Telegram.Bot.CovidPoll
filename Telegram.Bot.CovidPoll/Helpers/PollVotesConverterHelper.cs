@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Telegram.Bot.CovidPoll.Abstractions;
 using Telegram.Bot.CovidPoll.Db;
 using Telegram.Bot.CovidPoll.Helpers.Interfaces;
 using Telegram.Bot.CovidPoll.Helpers.Models;
@@ -35,7 +34,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
 
         public List<PredictionsModel> ConvertPollVotes(PollChat pollChat, int? covidToday = null)
         {
-            var pollAnswers = Array.Empty<Answer>()
+            var pollAnswers = Array.Empty<AnswerBase>()
                 .Concat(pollChat.PollAnswers).Concat(pollChat.NonPollAnswers);
 
             return pollAnswers.Select(pa => new PredictionsModel
@@ -63,7 +62,7 @@ namespace Telegram.Bot.CovidPoll.Helpers
             var pollsChats = poll.ChatPolls.Select(cp => new
             {
                 cp.ChatId,
-                Answers = Array.Empty<Answer>().Concat(cp.PollAnswers).Concat(cp.NonPollAnswers)
+                Answers = Array.Empty<AnswerBase>().Concat(cp.PollAnswers).Concat(cp.NonPollAnswers)
             }).ToList();
 
             var casesRatio = new List<PredictCovidCasesModel>();

@@ -1,6 +1,6 @@
-﻿namespace Telegram.Bot.CovidPoll.Abstractions
+﻿namespace Telegram.Bot.CovidPoll.Db
 {
-    public abstract class Answer
+    public abstract class AnswerBase
     {
         public long UserId { get; set; }
         public string Username { get; set; }
