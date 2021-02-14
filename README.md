@@ -9,18 +9,18 @@
 </div>
 
 ## What it is for?
-I wanted to create a useful system to predict covid cases for the next day. It's not something like ML, but it depends on users’ votes.
+I wanted to create a useful system to predict covid cases for the next day. It's not something like ML, but it depends on users votes.
 
 ### How it works
-You must add this bot to your group. Then, once a day the bot will send polls with options based on the last number of new covid cases. Users have time to vote, when the time ends the polls will be closed and prediction number based on votes from all groups, will be send to them. On the next day, the bot will check if there is new data in API (until it effects). When there is new data, the bot will send the information about new covid cases and the information who voted properly.
+You must add this bot to your group. Each day the bot will send the poll with options based on the last number of covid cases. Users have limited time to vote. When it ends, the poll will be closed and prediction number based on votes from all groups will be sent to each of them. On the next day, the bot will check if there is new data in API (until it changes). When the data is updated, the bot will send the information about the number of new covid cases and voting results.
 
 ### Some details
-* It's important to know that, all group members have their own vote ratio, even when one member is in many groups, he has separated ratio in each of groups.
-* Vote ratio is for covid cases prediction, covid predictions are calculated by weighted average.
-* Users have an opportunity to vote outside the numbers in poll. They have for that command /vote {here_covid_cases}.
+* It's important to know that all group members have their own vote ratio, even when one member is in many groups, he has individual ratio in each group.
+* Vote ratio is used to predict the number of covid cases, which is calculated by weighted average of ratio and votes.
+* Users can also vote by using a command /vote {custom_option} without the need to tick an answer in the poll.
 
 ## Installation
-The latest version of this bot is always in DockerHub (connected by Azure Pipelines to this repository):
+The latest version of this bot is always on DockerHub (connected by Azure Pipelines to this repository):
 ```
 docker pull kwiatek1100/telegram.bot.covidpoll:latest
 ```
@@ -32,14 +32,14 @@ It is very simple to start working with bot on your own hosting.
 This project is using [MongoDb](https://hub.docker.com/_/mongo) and [datalust/seq](https://hub.docker.com/r/datalust/seq) for logging.
 
 1. Create [bot token](https://core.telegram.org/bots#3-how-do-i-create-a-bot) (for **BotSettings__Token**).
-2. Check your AdminUserId in ```https://api.telegram.org/bot{your_key}/getUpdates```. You need to send at least one message to the bot and check your userId from this message here.
+2. Check your AdminUserId in ```https://api.telegram.org/bot{your_key}/getUpdates```. (You need to send at least one message to the bot.)
 2. Run Seq, then create an API key (for **Seq__ApiKey** and **Seq__ServerUrl**).
-3. Run MongoDb and fill this connection string with your data (for **MongoSettings__ConnectionString**).
+3. Run MongoDb and fill connection string with your data (for **MongoSettings__ConnectionString**).
 ```
 mongodb://username:password@ip_with_port
 ```
-5. The bot is integrated with this [API]() (for **CovidTrackingSettings__Url**). But you can write your own implementation for another API. :)
-6. Run Telegram.Bot.CovidPoll replacing values with yours.
+5. The bot is integrated with this [API](https://koronawirus-api.herokuapp.com/api/covid19/daily) (for **CovidTrackingSettings__Url**). But you can write your own implementation for another API. :)
+6. Run Telegram.Bot.CovidPoll with changed environment variables.
 
 
 
@@ -54,7 +54,7 @@ docker run -ti -d \
 -e Seq__ServerUrl="seq_url" \
 kwiatek1100/telegram.bot.covidpoll
 ```
-7. Of course, you can also change when the polls are starting and closing or when the bot is starting to fetch data.
+7. Of course, you can also change time, when polls are starting and closing or when the bot is begins to fetch data.
 ```
 -e BotSettings__PollsStartHour=""
 -e BotSettings__PollsEndHour=""
