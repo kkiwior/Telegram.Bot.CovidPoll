@@ -86,7 +86,7 @@ namespace Telegram.Bot.CovidPoll.Services
                         {
                             sb.AppendLine($"{winner.index + 1}. <a href=\"tg://user?id=" +
                                 $"{winner.value.UserId}\">{winner.value.UserFirstName}</a>" +
-                                $"- {winner.value.Points} punkty/ów" +
+                                $" - {winner.value.Points} punkty/ów" +
                                 $"{(userRatio != null ? $" ({userRatio})" : "")}");
                         }
                         else
